@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String    @unique
+  passwordHash  String
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  customer      Customer?
+  pharmacyStaff PharmacyStaff?
+  rider         Rider?
+}
+
+enum UserRole {
+  CUSTOMER
+  PHARMACY_OWNER
+  PHARMACY_STAFF
+  RIDER
+  ADMIN
+}
+
+model Customer {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  user      User    @relation(fields: [userId], references: [id])
+  name      String
+  phone     String
+  addresses Address[]
+  orders    Order[]
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  label      String
+  address    String
+  pincode    String
+  latitude   Float
+  longitude  Float
+  isDefault  Boolean  @default(false)
+}
+
+model Pharmacy {
+  id              String           @id @default(cuid())
+  name            String
+  licenseNumber   String           @unique
+  address         String
+  pincode         String
+  latitude        Float
+  longitude       Float
+  isActive        Boolean          @default(true)
+  operatingHours  Json?
+  staff           PharmacyStaff[]
+  inventory       Inventory[]
+  orders          Order[]
+}
+
+model PharmacyStaff {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  pharmacyId String
+  pharmacy   Pharmacy @relation(fields: [pharmacyId], references: [id])
+  role       StaffRole @default(STAFF)
+}
+
+enum StaffRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model Medicine {
+  id              String      @id @default(cuid())
+  name            String
+  manufacturer    String
+  dosageForm      String
+  strength        String
+  requiresPrescription Boolean @default(false)
+  category        String
+  description     String?
+  imageUrl        String?
+  inventory       Inventory[]
+  orderItems      OrderItem[]
+}
+
+model Inventory {
+  id           String   @id @default(cuid())
+  pharmacyId   String
+  pharmacy     Pharmacy @relation(fields: [pharmacyId], references: [id])
+  medicineId   String
+  medicine     Medicine @relation(fields: [medicineId], references: [id])
+  quantity     Int
+  price        Decimal
+  lastUpdated  DateTime @updatedAt
+  batchNumber  String?
+  expiryDate   DateTime?
+
+  @@unique([pharmacyId, medicineId])
+}
+
+model Prescription {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  imageUrl      String
+  verifiedBy    String?
+  verifiedAt    DateTime?
+  status        PrescriptionStatus @default(PENDING)
+  notes         String?
+  orders        Order[]
+}
+
+enum PrescriptionStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  customerId      String
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  pharmacyId      String
+  pharmacy        Pharmacy      @relation(fields: [pharmacyId], references: [id])
+  prescriptionId  String?
+  prescription    Prescription? @relation(fields: [prescriptionId], references: [id])
+  status          OrderStatus   @default(PENDING)
+  totalAmount     Decimal
+  deliveryFee     Decimal
+  paymentIntentId String?
+  riderId         String?
+  rider           Rider?        @relation(fields: [riderId], references: [id])
+  deliveryAddress Json
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  items           OrderItem[]
+  tracking        TrackingEvent[]
+  payment         Payment?
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id])
+  medicineId String
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  quantity   Int
+  price      Decimal
+}
+
+model Rider {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  name         String
+  phone        String
+  vehicleType  String
+  licensePlate String
+  isAvailable  Boolean  @default(false)
+  currentLat   Float?
+  currentLng   Float?
+  orders       Order[]
+}
+
+model Payment {
+  id            String  @id @default(cuid())
+  orderId       String  @unique
+  order         Order   @relation(fields: [orderId], references: [id])
+  amount        Decimal
+  currency      String  @default("INR")
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?
+  transactionId String?
+  createdAt     DateTime @default(now())
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model TrackingEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  status    String
+  location  Json?
+  timestamp DateTime @default(now())
+  notes     String?
+}
