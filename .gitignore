@@ -47,3 +47,7 @@ dist/
 dev.log
 .next-dev.log
 scripts/.smoke-phones.json
+
+# Locally stored prescription uploads. These are patient health data and must
+# never be committed; in production they live in private object storage.
+.uploads/

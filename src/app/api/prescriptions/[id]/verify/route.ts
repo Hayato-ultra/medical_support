@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { getActor, unauthorized, forbidden, hasRole } from '@/lib/api/auth'
+import { applyTransition } from '@/lib/api/order-lifecycle'
 
 /** Pharmacist decision on a prescription. Rejection triggers an auto-refund. */
 export async function PATCH(
@@ -55,62 +56,37 @@ export async function PATCH(
     })
 
     // Move every order waiting on this prescription, and refund on rejection.
+    // This goes through the shared lifecycle so the captured-payment gate, the
+    // stock release and the refund all behave exactly as they do elsewhere.
     const orders: any[] = await db.orm.Order
       .where({ prescriptionId: id, status: 'RX_PENDING' })
       .all()
 
+    const stuck: string[] = []
     for (const order of orders) {
-      if (status === 'VERIFIED') {
-        await db.orm.Order.where({ id: order.id }).update({ status: 'CONFIRMED' })
-        await db.orm.TrackingEvent.create({
-          id: crypto.randomUUID(),
-          orderId: order.id,
-          status: 'CONFIRMED',
-          timestamp: new Date(),
-          notes: 'Prescription verified. Your order is being prepared.',
-        })
-      } else {
-        await db.orm.Order.where({ id: order.id }).update({ status: 'RX_REJECTED' })
-        await db.orm.TrackingEvent.create({
-          id: crypto.randomUUID(),
-          orderId: order.id,
-          status: 'RX_REJECTED',
-          timestamp: new Date(),
-          notes: `Prescription rejected: ${notes}. Your refund is on the way.`,
-        })
-
-        const payment: any = await db.orm.Payment
-          .where({ orderId: order.id })
-          .first()
-        if (payment && payment.status === 'COMPLETED') {
-          await db.orm.Payment.where({ id: payment.id }).update({ status: 'REFUNDED' })
+      const result = await applyTransition(
+        order,
+        status === 'VERIFIED' ? 'CONFIRMED' : 'RX_REJECTED',
+        {
+          actorId: actor.userId,
+          notes:
+            status === 'VERIFIED'
+              ? 'Prescription verified. Your order is being prepared.'
+              : `Prescription rejected: ${notes}. Your refund is on the way.`,
         }
-
-        const items: any[] = await db.orm.OrderItem
-          .where({ orderId: order.id })
-          .all()
-        for (const item of items) {
-          const stock: any = await db.orm.Inventory
-            .where({
-              pharmacyId: order.pharmacyId,
-              medicineId: item.medicineId,
-            })
-            .first()
-          if (stock) {
-            await db.orm.Inventory
-              .where({ id: stock.id })
-              .update({ quantity: stock.quantity + item.quantity })
-          }
-        }
-      }
+      )
+      if (result.error) stuck.push(String(order.orderNumber))
     }
 
     return NextResponse.json({
       status,
-      ordersUpdated: orders.length,
+      ordersUpdated: orders.length - stuck.length,
+      stuckOrders: stuck,
       message:
         status === 'VERIFIED'
-          ? 'Prescription verified. The customer has been notified.'
+          ? stuck.length
+            ? `Prescription verified, but ${stuck.length} order(s) could not be confirmed: ${stuck.join(', ')}.`
+            : 'Prescription verified. The customer has been notified.'
           : 'Prescription rejected. Affected orders were cancelled and refunded.',
     })
   } catch (err) {

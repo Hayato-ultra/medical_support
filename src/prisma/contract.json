@@ -1161,6 +1161,13 @@
                   "kind": "scalar"
                 }
               },
+              "refundedAmount": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
               "status": {
                 "nullable": false,
                 "type": {
@@ -1220,6 +1227,9 @@
                 "paymentMethod": {
                   "column": "paymentMethod"
                 },
+                "refundedAmount": {
+                  "column": "refundedAmount"
+                },
                 "status": {
                   "column": "status"
                 },
@@ -1261,6 +1271,13 @@
                   "kind": "scalar"
                 }
               },
+              "licenseExpiry": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
               "licenseNumber": {
                 "nullable": false,
                 "type": {
@@ -1293,6 +1310,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "rxPaused": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               }
@@ -1358,6 +1382,9 @@
                 "latitude": {
                   "column": "latitude"
                 },
+                "licenseExpiry": {
+                  "column": "licenseExpiry"
+                },
                 "licenseNumber": {
                   "column": "licenseNumber"
                 },
@@ -1372,6 +1399,9 @@
                 },
                 "pincode": {
                   "column": "pincode"
+                },
+                "rxPaused": {
+                  "column": "rxPaused"
                 }
               },
               "namespaceId": "__unbound__",
@@ -2868,6 +2898,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "refundedAmount": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "status": {
                   "codecId": "sqlite/text@1",
                   "default": {
@@ -2943,6 +2978,11 @@
                   "nativeType": "real",
                   "nullable": false
                 },
+                "licenseExpiry": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "licenseNumber": {
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
@@ -2967,6 +3007,11 @@
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "rxPaused": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": true
                 }
               },
               "foreignKeys": [],
@@ -3617,7 +3662,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "5e803abb78a4c00c75cf53bb40ff2260cc95d63f7119503d92208f374e56880b"
+    "storageHash": "1debc7ad5197a0f1d29f6f09e24f9874272188f7a5f1c56ed4fd250ef6942639"
   },
   "capabilities": {
     "sql": {

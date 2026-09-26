@@ -46,16 +46,12 @@ export default function CartPage() {
             <ShoppingCart className="mb-4 h-14 w-14 text-muted-foreground" />
             <h1 className="mb-2 text-xl font-semibold">Your cart is empty</h1>
             <p className="mb-6 text-sm text-muted-foreground">
-              Search for a medicine or upload a prescription to get started.
+              Pick the medicines you need first. We will only ask for a
+              prescription if one of them actually requires it.
             </p>
-            <div className="flex gap-3">
-              <Button asChild>
-                <Link href="/medicines">Browse medicines</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/prescriptions/upload">Upload prescription</Link>
-              </Button>
-            </div>
+            <Button asChild>
+              <Link href="/medicines">Browse medicines</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -195,13 +191,15 @@ export default function CartPage() {
                     <Button
                       className="mt-4 w-full"
                       size="lg"
-                      onClick={() => router.push('/checkout?rx=required')}
+                      onClick={() => router.push('/checkout')}
                     >
                       Proceed to checkout
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                     <p className="mt-2 text-center text-xs text-amber-700">
-                      You will need to upload a prescription for the flagged items.
+                      We will ask for a prescription at checkout for{' '}
+                      {items.filter((i) => i.requiresPrescription).length} of your{' '}
+                      {items.length} items. Nothing else needs one.
                     </p>
                   </>
                 ) : (

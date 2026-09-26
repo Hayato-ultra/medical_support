@@ -1,6 +1,8 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { homeForRole } from '@/lib/role-home'
+import { SiteFooter } from '@/components/site-footer'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -15,16 +17,22 @@ export const dynamic = 'force-dynamic'
 export default function DashboardPage() {
   const { user, isLoading, isAuthenticated } = useAuth()
   const router = useRouter()
-  const [role, setRole] = useState('customer')
   const [orders, setOrders] = useState<any[]>([])
   const [prescriptions, setPrescriptions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  // This page is the customer dashboard. The role comes from the session, not
+  // from ?role=, so nobody can retitle a page they are not entitled to. Other
+  // roles go to their own dashboard; a signed-out visitor gets the public
+  // catalogue, because reading the medicines does not need an account.
+  // Only customers have a dashboard here. Every other role, admins included,
+  // belongs on its own page, so roleHome sends them there instead.
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login')
+    if (isLoading || !isAuthenticated || !user?.role) return
+    if (user.role !== 'CUSTOMER') {
+      router.replace(homeForRole(user.role))
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [isLoading, isAuthenticated, user, router])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,9 +42,11 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     try {
+      // No customerId: the server scopes orders and prescriptions to whoever
+      // is signed in, so there is nothing for a caller to tamper with.
       const [ordersRes, rxRes] = await Promise.all([
-        fetch(`/api/orders?customerId=${user?.id}`),
-        fetch(`/api/prescriptions?customerId=${user?.id}`),
+        fetch('/api/orders'),
+        fetch('/api/prescriptions'),
       ])
       const ordersData = await ordersRes.json()
       const rxData = await rxRes.json()
@@ -49,11 +59,6 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    setRole(params.get('role') || 'customer')
-  }, [])
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -62,8 +67,34 @@ export default function DashboardPage() {
     )
   }
 
-  if (!isAuthenticated || !user) {
-    return null
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
+          <h1 className="text-2xl font-bold">Sign in to see your dashboard</h1>
+          <p className="text-muted-foreground">
+            You can still browse medicines and read our policies without an account.
+          </p>
+          <div className="flex gap-2">
+            <Button onClick={() => router.push('/login')}>Sign in</Button>
+            <Button variant="outline" onClick={() => router.push('/medicines')}>
+              Browse medicines
+            </Button>
+          </div>
+        </main>
+        {/* The root URL redirects here, so a signed-out visitor still needs the
+            pharmacy login and the policy links. */}
+        <SiteFooter />
+      </div>
+    )
+  }
+
+  if (!user || (user.role !== 'CUSTOMER' && user.role !== 'ADMIN')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    )
   }
 
   const stats = [
@@ -73,38 +104,19 @@ export default function DashboardPage() {
     { label: 'Delivered', value: String(orders.filter((o: any) => o.status === 'DELIVERED').length), change: 'Completed', icon: Clock, color: 'text-gray-600' },
   ]
 
-  const config: Record<string, { title: string; desc: string; icon: any; color: string }> = {
-    customer: { title: 'Customer Dashboard', desc: 'Browse medicines, upload prescriptions, and track orders', icon: ShoppingCart, color: 'text-blue-600' },
-    pharmacy: { title: 'Pharmacy Dashboard', desc: 'Verify prescriptions and manage orders', icon: Store, color: 'text-green-600' },
-    rider: { title: 'Rider Dashboard', desc: 'View deliveries and update status', icon: MapPin, color: 'text-orange-600' },
-    admin: { title: 'Admin Dashboard', desc: 'Overview of the platform', icon: Package, color: 'text-purple-600' },
-  }
-  const cfg = config[role] || config.customer
-  const Icon = cfg.icon
+  const Icon = ShoppingCart
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-2">
-            <Package className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold tracking-tight">Medical Support</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline">{role}</Badge>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Home</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col bg-background">
 
-      <main className="container py-8 max-w-7xl mx-auto px-4">
+      <main className="container flex-1 py-8 max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-3 mb-8">
-          <Icon className={`h-8 w-8 ${cfg.color}`} />
+          <Icon className="h-8 w-8 text-blue-600" />
           <div>
-            <h1 className="text-3xl font-bold">{cfg.title}</h1>
-            <p className="text-muted-foreground">{cfg.desc}</p>
+            <h1 className="text-3xl font-bold">Customer Dashboard</h1>
+            <p className="text-muted-foreground">
+              Browse medicines, upload prescriptions, and track orders
+            </p>
           </div>
         </div>
 
@@ -188,6 +200,8 @@ export default function DashboardPage() {
           </Card>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

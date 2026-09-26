@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/components/customer/cart-provider";
 import { CartWidget } from "@/components/customer/cart-widget";
+import { Navigation } from "@/components/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CartProvider>
               <Providers>
                 <CartWidget />
+                <Navigation />
                 {children}
               </Providers>
             </CartProvider>

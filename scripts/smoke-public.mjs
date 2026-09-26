@@ -35,8 +35,19 @@ function jar(headers = {}) {
   return base
 }
 
+/**
+ * Content-Type has to be left off a multipart upload, otherwise fetch sends the
+ * hand-written boundary and the server cannot parse the form. Passing
+ * `multipart: true` says "let fetch set it".
+ */
+function isMultipart(options) {
+  return options.multipart === true || options.body instanceof FormData
+}
+
 async function call(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, { ...options, headers: jar(options.headers) })
+  const headers = jar(options.headers)
+  if (isMultipart(options)) delete headers['Content-Type']
+  const res = await fetch(`${BASE}${path}`, { ...options, headers })
   const setCookie = res.headers.getSetCookie?.() || []
   if (setCookie.length) cookies = setCookie.map((c) => c.split(';')[0]).join('; ')
   const text = await res.text()
@@ -59,6 +70,7 @@ function newSession() {
 
 async function callAs(session, path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers }
+  if (isMultipart(options)) delete headers['Content-Type']
   if (session.cookies) headers.Cookie = session.cookies
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
   const setCookie = res.headers.getSetCookie?.() || []
@@ -481,12 +493,102 @@ section('Cancellation and refund')
   }
 }
 
+// --- 7. Prescription: upload, dispensing pharmacy, and isolation ----------
+// The whole prescription leg used to be untested, which is how the pharmacy
+// ended up unable to see the very image it is legally required to dispense
+// against. Regulation aside, this is the busiest flow on the platform.
+section('Prescription dispensing visibility')
+{
+  const rivalPhone = `6${PHONE.slice(1)}`
+
+  // A second pharmacy that stays on its own (inactive) store, so we can prove
+  // it is refused the prescription that belongs to the seeded pharmacy's order.
+  const rival = await registerRole(rivalPhone, 'pharmacy', {
+    pharmacyName: 'Smoke Rival Pharmacy',
+    licenseNumber: `RIVAL-${PHONE}`,
+    pharmacyAddress: '9 Other Road',
+    pharmacyPincode: '452001',
+  })
+  check('rival pharmacy account registered', rival.status === 201, rival.body)
+  const rivalSession = newSession()
+  await loginAs(rivalSession, rivalPhone, PASSWORD)
+
+  const { body: cat } = await call('/api/medicines?requiresPrescription=1')
+  const rxMed = cat.medicines.find((m) => m.inStock)
+  check('an rx medicine is in stock to test with', !!rxMed, cat.count)
+
+  // 1x1 PNG stands in for a photo of a prescription.
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64'
+  )
+  const form = new FormData()
+  form.set('image', new Blob([png], { type: 'image/png' }), 'rx.png')
+  form.set('doctorName', 'Dr Smoke')
+  const uploaded = await call('/api/prescriptions', { method: 'POST', body: form })
+  check('prescription uploaded', uploaded.status === 201, uploaded.body)
+
+  const rxId = uploaded.body?.prescription?.id
+
+  const mine = await call('/api/prescriptions')
+  const mineRow = (mine.body?.prescriptions || []).find((p) => p.id === rxId)
+  check('customer sees their own prescription', !!mineRow, mine.body?.count)
+  check('customer is shown the prescription image', !!mineRow?.imageUrl, mineRow)
+  const rxFile = (mineRow?.imageUrl || '').split('/').pop()
+
+  // Attach it to an order so the pharmacy has a legal reason to see it.
+  const rxOrder = await call('/api/orders', {
+    method: 'POST',
+    body: JSON.stringify({
+      items: [{ medicineId: rxMed.id, quantity: 1 }],
+      deliveryAddress: { label: 'Home', address: '12 Test Street', pincode: '452001' },
+      prescriptionId: rxId,
+    }),
+  })
+  check('rx order accepts the prescription', rxOrder.status === 201, rxOrder.body)
+
+  const staff = newSession()
+  await loginAs(staff, STAFF_PHONE, PASSWORD)
+
+  const staffRx = await callAs(staff, '/api/prescriptions')
+  const staffRow = (staffRx.body?.prescriptions || []).find((p) => p.id === rxId)
+  check('pharmacy sees the prescription on its own order', !!staffRow, staffRx.body?.count)
+  check('pharmacy is given the prescription image', !!staffRow?.imageUrl, staffRow)
+
+  if (rxFile) {
+    const served = await callAs(staff, `/api/uploads/${rxFile}`)
+    check('pharmacy can open the prescription image', served.status === 200, served.status)
+  }
+
+  // A different pharmacy must not be able to read it, list it, or guess the URL.
+  const rivalList = await callAs(rivalSession, '/api/prescriptions')
+  check(
+    'rival pharmacy sees none of the order prescriptions',
+    (rivalList.body?.prescriptions || []).every((p) => p.id !== rxId),
+    rivalList.body?.prescriptions?.map((p) => p.id)
+  )
+  if (rxFile) {
+    const stolen = await callAs(rivalSession, `/api/uploads/${rxFile}`)
+    check('rival pharmacy cannot read the image', stolen.status === 403, stolen.status)
+  }
+
+  // The customer still owns it, and still alone.
+  const customerAfter = await call('/api/prescriptions')
+  const stillMine = (customerAfter.body?.prescriptions || []).every(
+    (p) => p.customerId === customerAfter.body.prescriptions[0]?.customerId
+  )
+  check('prescription list stays scoped to the customer', stillMine, customerAfter.body?.count)
+}
+
 console.log(`\n${'='.repeat(46)}`)
 console.log(`PASS ${passed}   FAIL ${failed}`)
 
 // Record the accounts this run touched so clean-smoke-data.mjs can remove them.
 // The phones are generated per run, so nothing else can identify them later.
-writeFileSync(PHONE_FILE, JSON.stringify([PHONE, STAFF_PHONE, RIDER_PHONE], null, 2))
+writeFileSync(
+  PHONE_FILE,
+  JSON.stringify([PHONE, STAFF_PHONE, RIDER_PHONE, `6${PHONE.slice(1)}`], null, 2)
+)
 console.log(`phones written to ${path.basename(PHONE_FILE)}`)
 
 process.exit(failed > 0 ? 1 : 0)

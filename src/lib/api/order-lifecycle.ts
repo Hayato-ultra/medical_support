@@ -58,7 +58,9 @@ export const TRANSITION_ROLES: Record<string, string[]> = {
   OUT_FOR_DELIVERY: ['RIDER', 'ADMIN'],
   // DELIVERED is intentionally absent: it is only reachable through
   // /verify-delivery, which checks the customer's 6-digit code.
-  CANCELLED: ['CUSTOMER', 'ADMIN', 'PHARMACY_OWNER'],
+  // CANCELLED doubles as "pharmacy declined this order", so staff need it too.
+  // The refund always goes to the customer, never out of the pharmacy's side.
+  CANCELLED: ['CUSTOMER', 'ADMIN', 'PHARMACY_OWNER', 'PHARMACY_STAFF'],
 }
 
 /**

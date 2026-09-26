@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'5e803abb78a4c00c75cf53bb40ff2260cc95d63f7119503d92208f374e56880b'>;
+  StorageHashBase<'1debc7ad5197a0f1d29f6f09e24f9874272188f7a5f1c56ed4fd250ef6942639'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -201,6 +201,7 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly orderId: CodecTypes['sqlite/text@1']['output'];
       readonly amount: CodecTypes['sqlite/text@1']['output'];
+      readonly refundedAmount: CodecTypes['sqlite/text@1']['output'] | null;
       readonly currency: CodecTypes['sqlite/text@1']['output'];
       readonly status: CodecTypes['sqlite/text@1']['output'];
       readonly paymentMethod: CodecTypes['sqlite/text@1']['output'] | null;
@@ -211,11 +212,13 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly name: CodecTypes['sqlite/text@1']['output'];
       readonly licenseNumber: CodecTypes['sqlite/text@1']['output'];
+      readonly licenseExpiry: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly address: CodecTypes['sqlite/text@1']['output'];
       readonly pincode: CodecTypes['sqlite/text@1']['output'];
       readonly latitude: CodecTypes['sqlite/real@1']['output'];
       readonly longitude: CodecTypes['sqlite/real@1']['output'];
       readonly isActive: CodecTypes['sqlite/integer@1']['output'];
+      readonly rxPaused: CodecTypes['sqlite/integer@1']['output'] | null;
       readonly operatingHours: CodecTypes['sqlite/json@1']['output'] | null;
     };
     readonly PharmacyStaff: {
@@ -362,6 +365,7 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly orderId: CodecTypes['sqlite/text@1']['input'];
       readonly amount: CodecTypes['sqlite/text@1']['input'];
+      readonly refundedAmount: CodecTypes['sqlite/text@1']['input'] | null;
       readonly currency: CodecTypes['sqlite/text@1']['input'];
       readonly status: CodecTypes['sqlite/text@1']['input'];
       readonly paymentMethod: CodecTypes['sqlite/text@1']['input'] | null;
@@ -372,11 +376,13 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly name: CodecTypes['sqlite/text@1']['input'];
       readonly licenseNumber: CodecTypes['sqlite/text@1']['input'];
+      readonly licenseExpiry: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly address: CodecTypes['sqlite/text@1']['input'];
       readonly pincode: CodecTypes['sqlite/text@1']['input'];
       readonly latitude: CodecTypes['sqlite/real@1']['input'];
       readonly longitude: CodecTypes['sqlite/real@1']['input'];
       readonly isActive: CodecTypes['sqlite/integer@1']['input'];
+      readonly rxPaused: CodecTypes['sqlite/integer@1']['input'] | null;
       readonly operatingHours: CodecTypes['sqlite/json@1']['input'] | null;
     };
     readonly PharmacyStaff: {
@@ -526,6 +532,7 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly orderId: CodecTypes['sqlite/text@1']['output'];
       readonly paymentMethod: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly refundedAmount: CodecTypes['sqlite/text@1']['output'] | null;
       readonly status: CodecTypes['sqlite/text@1']['output'];
       readonly transactionId: CodecTypes['sqlite/text@1']['output'] | null;
     };
@@ -534,11 +541,13 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly isActive: CodecTypes['sqlite/integer@1']['output'];
       readonly latitude: CodecTypes['sqlite/real@1']['output'];
+      readonly licenseExpiry: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly licenseNumber: CodecTypes['sqlite/text@1']['output'];
       readonly longitude: CodecTypes['sqlite/real@1']['output'];
       readonly name: CodecTypes['sqlite/text@1']['output'];
       readonly operatingHours: CodecTypes['sqlite/json@1']['output'] | null;
       readonly pincode: CodecTypes['sqlite/text@1']['output'];
+      readonly rxPaused: CodecTypes['sqlite/integer@1']['output'] | null;
     };
     readonly PharmacyStaff: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -687,6 +696,7 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly orderId: CodecTypes['sqlite/text@1']['input'];
       readonly paymentMethod: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly refundedAmount: CodecTypes['sqlite/text@1']['input'] | null;
       readonly status: CodecTypes['sqlite/text@1']['input'];
       readonly transactionId: CodecTypes['sqlite/text@1']['input'] | null;
     };
@@ -695,11 +705,13 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly isActive: CodecTypes['sqlite/integer@1']['input'];
       readonly latitude: CodecTypes['sqlite/real@1']['input'];
+      readonly licenseExpiry: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly licenseNumber: CodecTypes['sqlite/text@1']['input'];
       readonly longitude: CodecTypes['sqlite/real@1']['input'];
       readonly name: CodecTypes['sqlite/text@1']['input'];
       readonly operatingHours: CodecTypes['sqlite/json@1']['input'] | null;
       readonly pincode: CodecTypes['sqlite/text@1']['input'];
+      readonly rxPaused: CodecTypes['sqlite/integer@1']['input'] | null;
     };
     readonly PharmacyStaff: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -810,11 +822,13 @@ export namespace Models {
     id: CodecTypes['sqlite/text@1']['output'];
     name: CodecTypes['sqlite/text@1']['output'];
     licenseNumber: CodecTypes['sqlite/text@1']['output'];
+    licenseExpiry: CodecTypes['sqlite/datetime@1']['output'] | null;
     address: CodecTypes['sqlite/text@1']['output'];
     pincode: CodecTypes['sqlite/text@1']['output'];
     latitude: CodecTypes['sqlite/real@1']['output'];
     longitude: CodecTypes['sqlite/real@1']['output'];
     isActive: CodecTypes['sqlite/integer@1']['output'];
+    rxPaused: CodecTypes['sqlite/integer@1']['output'] | null;
     operatingHours: CodecTypes['sqlite/json@1']['output'] | null;
     inventory: Inventory[];
     orders: Order[];
@@ -922,6 +936,7 @@ export namespace Models {
     id: CodecTypes['sqlite/text@1']['output'];
     orderId: CodecTypes['sqlite/text@1']['output'];
     amount: CodecTypes['sqlite/text@1']['output'];
+    refundedAmount: CodecTypes['sqlite/text@1']['output'] | null;
     currency: CodecTypes['sqlite/text@1']['output'];
     status: CodecTypes['sqlite/text@1']['output'];
     paymentMethod: CodecTypes['sqlite/text@1']['output'] | null;
@@ -1559,6 +1574,11 @@ type ContractBase = Omit<
                   readonly codecId: 'sqlite/text@1';
                   readonly nullable: false;
                 };
+                readonly refundedAmount: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
                 readonly currency: {
                   readonly nativeType: 'text';
                   readonly codecId: 'sqlite/text@1';
@@ -1625,6 +1645,11 @@ type ContractBase = Omit<
                   readonly codecId: 'sqlite/text@1';
                   readonly nullable: false;
                 };
+                readonly licenseExpiry: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
                 readonly address: {
                   readonly nativeType: 'text';
                   readonly codecId: 'sqlite/text@1';
@@ -1649,6 +1674,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'integer';
                   readonly codecId: 'sqlite/integer@1';
                   readonly nullable: false;
+                };
+                readonly rxPaused: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: true;
                 };
                 readonly operatingHours: {
                   readonly nativeType: 'text';
@@ -2791,6 +2821,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
               };
+              readonly refundedAmount: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
               readonly currency: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
@@ -2833,6 +2867,7 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly orderId: { readonly column: 'orderId' };
                 readonly amount: { readonly column: 'amount' };
+                readonly refundedAmount: { readonly column: 'refundedAmount' };
                 readonly currency: { readonly column: 'currency' };
                 readonly status: { readonly column: 'status' };
                 readonly paymentMethod: { readonly column: 'paymentMethod' };
@@ -2855,6 +2890,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
               };
+              readonly licenseExpiry: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
               readonly address: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
@@ -2873,6 +2912,10 @@ type ContractBase = Omit<
               };
               readonly isActive: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly rxPaused: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
               };
               readonly operatingHours: {
@@ -2922,11 +2965,13 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
                 readonly licenseNumber: { readonly column: 'licenseNumber' };
+                readonly licenseExpiry: { readonly column: 'licenseExpiry' };
                 readonly address: { readonly column: 'address' };
                 readonly pincode: { readonly column: 'pincode' };
                 readonly latitude: { readonly column: 'latitude' };
                 readonly longitude: { readonly column: 'longitude' };
                 readonly isActive: { readonly column: 'isActive' };
+                readonly rxPaused: { readonly column: 'rxPaused' };
                 readonly operatingHours: { readonly column: 'operatingHours' };
               };
             };

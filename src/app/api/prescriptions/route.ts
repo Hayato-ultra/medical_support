@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { db } from '@/lib/db/client'
-import { getActor, unauthorized, forbidden, hasRole } from '@/lib/api/auth'
+import { getActor, unauthorized, forbidden, hasRole, resolvePharmacyScope } from '@/lib/api/auth'
 
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
@@ -115,9 +115,35 @@ export async function GET(req: Request) {
     if (actor.role === 'CUSTOMER') {
       where.customerId = actor.customerId
     } else if (hasRole(actor, 'ADMIN', 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
-      // Staff see the verification queue, customers see their own uploads.
-      if (status) where.status = status
-      else where.status = 'PENDING'
+      if (actor.role === 'ADMIN') {
+        // The platform verifier works the global queue, oldest first.
+        if (status) where.status = status
+        else where.status = 'PENDING'
+      } else {
+        // A partner pharmacy is the dispensing party: it may only see the
+        // prescriptions attached to its own orders, never the whole queue.
+        // Anything wider leaks other customers' health data to a competitor.
+        const pharmacyId = await resolvePharmacyScope(actor)
+        if (!pharmacyId) {
+          return NextResponse.json({ prescriptions: [], count: 0 })
+        }
+        const orders: any[] = await db.orm.Order.where({ pharmacyId }).all()
+        const ids = [
+          ...new Set(orders.map((o) => o.prescriptionId).filter(Boolean)),
+        ] as string[]
+        if (ids.length === 0) {
+          return NextResponse.json({ prescriptions: [], count: 0 })
+        }
+        const scoped: any[] = []
+        for (const id of ids) {
+          const found: any = await db.orm.Prescription.where({ id }).first()
+          if (found) scoped.push(found)
+        }
+        return NextResponse.json({
+          prescriptions: await enrichPrescriptions(scoped, actor, status),
+          count: scoped.length,
+        })
+      }
     } else {
       return forbidden('You cannot view prescriptions')
     }
@@ -126,30 +152,10 @@ export async function GET(req: Request) {
 
     const prescriptions: any[] = await db.orm.Prescription.where(where).all()
 
-    const enriched = await Promise.all(
-      prescriptions.map(async (p) => {
-        const entry: any = await db.orm.PrescriptionLibrary
-          .where({ prescriptionId: p.id })
-          .first()
-        return {
-          id: p.id,
-          status: p.status,
-          notes: p.notes || '',
-          verifiedAt: p.verifiedAt,
-          createdAt: p.createdAt,
-          imageUrl: actor.role === 'CUSTOMER' ? p.imageUrl : undefined,
-          doctorName: entry?.doctorName || 'Not recorded',
-          expiryDate: entry?.expiryDate || null,
-          expired: entry?.expiryDate ? new Date(entry.expiryDate) < new Date() : false,
-        }
-      })
-    )
-
-    enriched.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-
-    return NextResponse.json({ prescriptions: enriched, count: enriched.length })
+    return NextResponse.json({
+      prescriptions: await enrichPrescriptions(prescriptions, actor, status),
+      count: prescriptions.length,
+    })
   } catch (err) {
     console.error('Prescription fetch error:', err)
     return NextResponse.json(
@@ -157,6 +163,51 @@ export async function GET(req: Request) {
       { status: 500 }
     )
   }
+}
+
+/**
+ * Adds the doctor and expiry detail, and decides who may see the image itself.
+ *
+ * The image is the prescription, so it goes to the customer who uploaded it and
+ * to the pharmacy that has to dispense against it. Staff on the platform's
+ * verification queue are deliberately kept out unless they are the admin
+ * verifier; /api/uploads/[file] enforces the same rule on the bytes.
+ */
+async function enrichPrescriptions(
+  prescriptions: any[],
+  actor: Awaited<ReturnType<typeof getActor>> & {},
+  status?: string | null
+) {
+  const canSeeImage =
+    actor.role === 'CUSTOMER' ||
+    actor.role === 'ADMIN' ||
+    hasRole(actor, 'PHARMACY_OWNER', 'PHARMACY_STAFF')
+
+  const enriched = await Promise.all(
+    prescriptions.map(async (p) => {
+      const entry: any = await db.orm.PrescriptionLibrary
+        .where({ prescriptionId: p.id })
+        .first()
+      return {
+        id: p.id,
+        customerId: p.customerId,
+        status: status && actor.role === 'CUSTOMER' ? status : p.status,
+        notes: p.notes || '',
+        verifiedBy: p.verifiedBy || null,
+        verifiedAt: p.verifiedAt,
+        createdAt: p.createdAt,
+        imageUrl: canSeeImage ? p.imageUrl : undefined,
+        doctorName: entry?.doctorName || 'Not recorded',
+        expiryDate: entry?.expiryDate || null,
+        expired: entry?.expiryDate ? new Date(entry.expiryDate) < new Date() : false,
+      }
+    })
+  )
+
+  enriched.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+  return enriched
 }
 
 /**
@@ -169,13 +220,24 @@ async function storePrescriptionFile(buffer: Buffer, upload: File) {
 
   if (token) {
     const { put } = await import('@vercel/blob')
-    const blob = await put(`prescriptions/${filename}`, buffer, {
-      access: 'private',
-      token,
-      contentType: upload.type,
-      addRandomSuffix: false,
-    })
-    return blob.url
+    try {
+      const blob = await put(`prescriptions/${filename}`, buffer, {
+        access: 'private',
+        token,
+        contentType: upload.type,
+        addRandomSuffix: false,
+      })
+      return blob.url
+    } catch (err) {
+      // A stale or placeholder token must not take prescription upload down
+      // with it: an unusable token is a configuration problem, whereas a 500
+      // here loses the customer's prescription and blocks their order. Fall
+      // back to local storage and make the misconfiguration loud.
+      console.error(
+        '[prescriptions] Vercel Blob put failed, falling back to local storage. Check BLOB_READ_WRITE_TOKEN.',
+        err
+      )
+    }
   }
 
   const { promises: fs } = await import('fs')

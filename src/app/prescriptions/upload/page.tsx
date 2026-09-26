@@ -56,6 +56,12 @@ function PrescriptionUploadForm() {
     }
   }, [preview])
 
+  // Hand straight back to checkout when the upload came from there, so the
+  // customer never has to click through a success page to finish an order.
+  useEffect(() => {
+    if (done && returnTo === 'checkout') router.replace('/checkout')
+  }, [done, returnTo, router])
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">

@@ -46,11 +46,15 @@ model Pharmacy {
   id              String  @id
   name            String
   licenseNumber   String  @unique
+  licenseExpiry   DateTime?
   address         String
   pincode         String
   latitude        Float
   longitude       Float
   isActive        Int
+  // Set while the on-duty pharmacist is unavailable, so prescription orders are
+  // routed elsewhere but over-the-counter orders still land. Null or 0 means open.
+  rxPaused        Int?
   operatingHours  Json?
   staff           PharmacyStaff[]
   inventory       Inventory[]
@@ -187,6 +191,11 @@ model Payment {
   orderId       String  @unique
   order         Order   @relation(fields: [orderId], references: [id])
   amount        Decimal
+  // Money already returned to the customer. Null or 0 means nothing refunded.
+  // Anything above zero but below amount means PARTIALLY_REFUNDED, which is how
+  // out-of-stock lines get refunded without splitting the order into several
+  // payment rows.
+  refundedAmount Decimal?
   currency      String
   status        PaymentStatus @default(PENDING)
   paymentMethod String?

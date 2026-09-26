@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { db } from '@/lib/db/client'
-import { getActor, unauthorized, forbidden, hasRole } from '@/lib/api/auth'
+import {
+  getActor,
+  unauthorized,
+  forbidden,
+  hasRole,
+  resolvePharmacyScope,
+} from '@/lib/api/auth'
 
 const PRESCRIPTION_DIR = path.join(process.cwd(), '.uploads', 'prescriptions')
 
@@ -10,9 +16,11 @@ const PRESCRIPTION_DIR = path.join(process.cwd(), '.uploads', 'prescriptions')
  * Serves locally stored prescription images during development. In production
  * uploads live in private object storage and are streamed through here.
  *
- * A random filename is not access control, so the file is only served to the
- * customer who owns the prescription and to the pharmacy staff who have to
- * review it.
+ * A random filename is not access control. The customer who owns the
+ * prescription can always fetch it, and the dispensing pharmacy can fetch it
+ * because it has to dispense against it. Any other pharmacy is refused, even
+ * with a correct filename, so a guessed name cannot pull another store's
+ * customer's health data.
  */
 export async function GET(
   _req: Request,
@@ -45,7 +53,15 @@ export async function GET(
       if (linked.customerId !== actor.customerId) {
         return forbidden('That prescription belongs to another account')
       }
-    } else if (!hasRole(actor, 'ADMIN', 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
+    } else if (hasRole(actor, 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
+      const pharmacyId = await resolvePharmacyScope(actor)
+      if (!pharmacyId) return forbidden('Your account is not linked to a pharmacy')
+      const orders: any[] = await db.orm.Order.where({ prescriptionId: linked.id }).all()
+      const theirs = orders.some((o) => o.pharmacyId === pharmacyId)
+      if (!theirs) {
+        return forbidden('That prescription is not attached to your orders')
+      }
+    } else if (actor.role !== 'ADMIN') {
       return forbidden('You cannot view this prescription')
     }
 

@@ -50,16 +50,28 @@ export default function CheckoutPage() {
   const otcItems = items.filter((i) => !i.requiresPrescription)
   const hasOtcItems = otcItems.length > 0
 
-  useEffect(() => {
-    if (items.length > 0) setStep(hasPrescriptionItems ? 'rx' : 'address')
-  }, [hasPrescriptionItems, items.length])
+  // The prescription medicines, named so the prompt says which items caused it.
+  const rxItems = items.filter((i) => i.requiresPrescription)
+  const rxNames = rxItems.map((i) => i.name).join(', ')
 
-  // Pick up a prescription chosen on the upload or library page.
+  // The prescription step exists only when the cart actually contains
+  // prescription medicines. An all-over-the-counter cart goes straight from
+  // address to payment and is never asked for a prescription.
+  const needsRxStep = hasPrescriptionItems
+  const steps = [
+    { key: 'address' as const, label: 'Delivery address' },
+    ...(needsRxStep ? [{ key: 'rx' as const, label: 'Prescription' }] : []),
+    { key: 'pay' as const, label: 'Payment' },
+  ]
+
+  // Pick up a prescription chosen on the upload or library page, then skip
+  // past the step it satisfies.
   useEffect(() => {
     const stored = sessionStorage.getItem('prescriptionId')
     if (stored) {
       setPrescriptionId(stored)
       sessionStorage.removeItem('prescriptionId')
+      setStep((s) => (s === 'rx' ? 'pay' : s))
     }
   }, [])
 
@@ -144,14 +156,14 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         if (data.error === 'PRESCRIPTION_REQUIRED') {
-          setStep('rx')
+          if (needsRxStep) setStep('rx')
           setError(data.message)
           return
         }
         if (data.error === 'PRESCRIPTION_NOT_USABLE' || data.error === 'PRESCRIPTION_IN_USE') {
           // The saved prescription cannot clear this order, so send the customer
           // back to upload a fresh one rather than leaving them stuck.
-          setStep('rx')
+          if (needsRxStep) setStep('rx')
           setError(data.message)
           return
         }
@@ -200,11 +212,7 @@ export default function CheckoutPage() {
       clearCart()
       setPaymentStage('idle')
 
-      router.push(
-        `/orders/${data.order.id}?placed=1${
-          webhook.awaitingPrescription ? '&rx=1' : ''
-        }`
-      )
+      router.push(`/orders/${data.order.id}?placed=1`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not place order')
       setPaymentStage('idle')
@@ -247,38 +255,31 @@ export default function CheckoutPage() {
 
       <div className="container mx-auto max-w-5xl px-4 py-6">
         <ol className="mb-8 flex flex-wrap items-center gap-2 text-sm">
-          {[
-            { key: 'address', label: 'Delivery address' },
-            { key: 'rx', label: 'Prescription', optional: hasPrescriptionItems },
-            { key: 'pay', label: 'Payment' },
-          ].map((s, i) => {
-            const active =
-              step === s.key ||
-              (s.key === 'rx' && !hasPrescriptionItems && step === 'pay') ||
-              (step === 'pay' && i < 2 && hasPrescriptionItems && s.key === 'rx')
-            return (
-              <li key={s.key} className="flex items-center gap-2">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
-                    active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {i + 1}
-                </span>
-                <span className={active ? 'font-medium' : 'text-muted-foreground'}>
-                  {s.label}
-                  {s.optional && !s.key.includes('pay') && (
-                    <span className="ml-1 text-xs text-amber-700">(needed)</span>
-                  )}
-                </span>
-                {i < 2 && <span className="mx-1 h-px w-6 bg-border" />}
-              </li>
-            )
-          })}
+          {steps.map((s, i) => (
+            <li key={s.key} className="flex items-center gap-2">
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                  step === s.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {i + 1}
+              </span>
+              <span className={step === s.key ? 'font-medium' : 'text-muted-foreground'}>
+                {s.label}
+                {s.key === 'rx' && (
+                  <span className="ml-1 text-xs text-amber-700">(needed)</span>
+                )}
+              </span>
+              {i < steps.length - 1 && <span className="mx-1 h-px w-6 bg-border" />}
+            </li>
+          ))}
         </ol>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-5">
+            {step === 'address' && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -384,9 +385,10 @@ export default function CheckoutPage() {
                 </p>
               </CardContent>
             </Card>
+            )}
 
-            {hasPrescriptionItems && (
-              <Card className={step === 'rx' ? 'ring-2 ring-primary' : ''}>
+            {step === 'rx' && needsRxStep && (
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Pill className="h-5 w-5 text-amber-600" /> Prescription
@@ -399,7 +401,7 @@ export default function CheckoutPage() {
                   <p className="text-sm text-muted-foreground">
                     {prescriptionId
                       ? 'Prescription attached. Our pharmacist will verify it, usually within 15 minutes.'
-                      : 'Take a photo of the prescription, pick one you have used before, or continue without one for the non-Rx items only.'}
+                      : `These ${rxItems.length} item${rxItems.length === 1 ? '' : 's'} need${rxItems.length === 1 ? 's' : ''} a prescription: ${rxNames}. The other ${otcItems.length} do not.`}
                   </p>
 
                   <div className="flex flex-wrap gap-2">
@@ -411,11 +413,6 @@ export default function CheckoutPage() {
                     <Button asChild variant="outline">
                       <Link href="/prescriptions?returnTo=checkout">My prescriptions</Link>
                     </Button>
-                    {!prescriptionId && (
-                      <Button variant="ghost" onClick={() => setStep('pay')}>
-                        Continue without it
-                      </Button>
-                    )}
                   </div>
 
                   {prescriptionId && (
@@ -427,6 +424,7 @@ export default function CheckoutPage() {
               </Card>
             )}
 
+            {step === 'pay' && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -442,6 +440,7 @@ export default function CheckoutPage() {
                 </p>
               </CardContent>
             </Card>
+            )}
           </div>
 
           <div className="lg:sticky lg:top-6 lg:self-start">
@@ -496,7 +495,7 @@ export default function CheckoutPage() {
                   <p className="mt-3 rounded-md bg-red-50 p-2 text-xs text-red-700">{error}</p>
                 )}
 
-                {hasPrescriptionItems && !prescriptionId ? (
+                {step === 'pay' && needsRxStep && !prescriptionId ? (
                   <>
                     <Button className="mt-4 w-full" size="lg" disabled={!addressValid} onClick={() => setStep('rx')}>
                       {addressValid ? 'Upload prescription to continue' : 'Add a serviceable address'}
@@ -514,7 +513,7 @@ export default function CheckoutPage() {
                     </Button>
                     <p className="mt-2 text-center text-[11px] text-muted-foreground">
                       {hasOtcItems
-                        ? 'The prescription medicines will be left out of this order.'
+                        ? `This order covers only the ${otcItems.length} medicine${otcItems.length === 1 ? '' : 's'} that do not need one. ${rxNames} will be left out.`
                         : 'Upload a prescription to check out these medicines.'}
                     </p>
                   </>
@@ -522,16 +521,30 @@ export default function CheckoutPage() {
                   <Button
                     className="mt-4 w-full"
                     size="lg"
-                    disabled={!addressValid || submitting}
-                    onClick={() => placeOrder()}
+                    disabled={step === 'address' ? !addressValid : submitting}
+                    onClick={() => {
+                      if (submitting) return
+                      if (step === 'pay') {
+                        placeOrder()
+                      } else {
+                        setError('')
+                        setStep(step === 'address' && needsRxStep ? 'rx' : 'pay')
+                      }
+                    }}
                   >
                     {submitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {paymentStage === 'processing' ? 'Confirming payment…' : 'Placing order…'}
                       </>
-                    ) : (
+                    ) : step === 'pay' ? (
                       <>Pay ₹{grandTotal}</>
+                    ) : step === 'address' && !addressValid ? (
+                      'Add a serviceable address'
+                    ) : step === 'address' && needsRxStep ? (
+                      'Continue to prescription'
+                    ) : (
+                      'Continue to payment'
                     )}
                   </Button>
                 )}

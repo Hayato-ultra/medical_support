@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { getSession, signIn } from 'next-auth/react'
 import { AuthForm } from '@/components/ui/auth-form'
 import { Button } from '@/components/ui/button'
+import { homeForRole } from '@/lib/role-home'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -12,6 +13,25 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'otp'>('login')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState('')
+  const [registered, setRegistered] = useState('')
+
+  // Just landed here from /register?registered=pharmacy_owner. Read it in an
+  // effect rather than with useSearchParams so this page stays prerenderable
+  // without a Suspense boundary.
+  useEffect(() => {
+    const role = new URLSearchParams(window.location.search).get('registered')
+    if (role) setRegistered(role)
+  }, [])
+
+  // One shared destination for both sign-in paths. The role is read back from
+  // the session rather than assumed, so a pharmacy signing in through the
+  // footer's "Pharmacy login" lands on the pharmacy dashboard instead of the
+  // customer medicines page.
+  const goHome = async () => {
+    const session = await getSession()
+    router.push(homeForRole(session?.user?.role || 'CUSTOMER'))
+    router.refresh()
+  }
 
   const handleLogin = async (email: string, password: string) => {
     setError('')
@@ -25,8 +45,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Invalid email or password')
       } else {
-        router.push('/medicines')
-        router.refresh()
+        await goHome()
       }
     } catch (err) {
       setError('Login failed')
@@ -64,8 +83,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Invalid OTP')
       } else {
-        router.push('/medicines')
-        router.refresh()
+        await goHome()
       }
     } catch (err) {
       setError('OTP verification failed')
@@ -81,6 +99,14 @@ export default function LoginPage() {
             {mode === 'login' ? 'Sign in to your account' : 'Enter the OTP sent to your phone'}
           </p>
         </div>
+
+        {registered && (
+          <div className="rounded border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
+            Account created. {registered === 'pharmacy_owner'
+              ? 'Your pharmacy stays inactive until an admin approves your licence, so you will not see orders until then.'
+              : 'Sign in below to continue.'}
+          </div>
+        )}
 
         <div className="flex gap-2 justify-center">
           <Button
@@ -100,7 +126,7 @@ export default function LoginPage() {
         </div>
 
         {mode === 'login' ? (
-          <AuthForm type="login" onSubmit={handleLogin} error={error} />
+          <AuthForm onSubmit={handleLogin} error={error} />
         ) : (
           <div className="space-y-4">
             <div>
@@ -147,6 +173,10 @@ export default function LoginPage() {
           <a href="/register" className="text-primary underline">
             Register
           </a>
+        </p>
+        <p className="text-center text-xs text-muted-foreground">
+          Customers, pharmacies and riders all sign in here. You will be taken
+          straight to the dashboard for your role.
         </p>
       </div>
     </div>

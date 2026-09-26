@@ -55,24 +55,91 @@ export async function POST(req: Request) {
       )
     }
 
-    let pharmacy: any = null
-    if (data.pharmacyId) {
-      pharmacy = await db.orm.Pharmacy.where({ id: data.pharmacyId }).first()
+    // Resolve the medicines before choosing a pharmacy, because whether the
+    // order needs a prescription decides which pharmacies are eligible at all.
+    const medicines: any[] = []
+    for (const item of data.items) {
+      const medicine: any = await db.orm.Medicine
+        .where({ id: item.medicineId })
+        .first()
+      if (!medicine) {
+        return NextResponse.json(
+          { error: 'Medicine not found', medicineId: item.medicineId },
+          { status: 404 }
+        )
+      }
+      medicines.push(medicine)
     }
-    if (!pharmacy) {
-      const all: any[] = await db.orm.Pharmacy.where({ isActive: 1 }).all()
-      pharmacy = all[0] ?? null
+    const needsRx = medicines.some((m) => !!m.requiresPrescription)
+
+    // A pharmacy with an expired or missing licence may not take any order, and
+    // one paused for prescriptions may still sell over the counter but not
+    // dispense against a prescription.
+    const now = Date.now()
+    const licenceValid = (p: any) =>
+      !p.licenseExpiry || new Date(p.licenseExpiry).getTime() > now
+    const eligible = (p: any) =>
+      !!p.isActive && licenceValid(p) && (!needsRx || !p.rxPaused)
+
+    const active: any[] = await db.orm.Pharmacy.where({ isActive: 1 }).all()
+    const stockByPharmacy = new Map<string, any[]>()
+    for (const p of active) {
+      stockByPharmacy.set(
+        p.id,
+        await db.orm.Inventory.where({ pharmacyId: p.id }).all()
+      )
     }
+
+    const stockFor = (p: any, item: { medicineId: string }) =>
+      (stockByPharmacy.get(p.id) ?? []).find(
+        (r: any) => r.medicineId === item.medicineId
+      )
+
+    // Prefer a pharmacy that can fill the whole basket, then the one with the
+    // most spare stock, then name order so the choice is stable. Previously this
+    // took the first active row, so one out-of-stock store rejected every order.
+    const canCover = (p: any) =>
+      data.items.every((item) => {
+        const row = stockFor(p, item)
+        return !!row && row.quantity >= item.quantity
+      })
+    const spare = (p: any) =>
+      data.items.reduce(
+        (sum, item) => sum + ((stockFor(p, item)?.quantity ?? 0) - item.quantity),
+        0
+      )
+
+    const ranked = active
+      .filter(eligible)
+      .sort((a, b) => {
+        const cover = Number(canCover(b)) - Number(canCover(a))
+        if (cover !== 0) return cover
+        const slack = spare(b) - spare(a)
+        return slack !== 0 ? slack : String(a.name).localeCompare(String(b.name))
+      })
+
+    // A client-supplied pharmacy is a preference, not authority: it is honoured
+    // only when it survives the same eligibility and stock checks.
+    let pharmacy: any =
+      (data.pharmacyId && ranked.find((p) => p.id === data.pharmacyId)) ||
+      ranked[0] ||
+      null
     if (!pharmacy) {
+      const pausedOnly = active.length > 0
       return NextResponse.json(
-        { error: 'No pharmacy is currently accepting orders' },
+        {
+          error: 'NO_ELIGIBLE_PHARMACY',
+          message: pausedOnly
+            ? needsRx
+              ? 'Every pharmacy nearby is licensed but has no pharmacist on duty for prescriptions right now.'
+              : 'No pharmacy near you has a valid licence to dispense.'
+            : 'No pharmacy is currently accepting orders.',
+        },
         { status: 503 }
       )
     }
 
-    const inventoryRows: any[] = await db.orm.Inventory
-      .where({ pharmacyId: pharmacy.id })
-      .all()
+    const inventoryRows: any[] = stockByPharmacy.get(pharmacy.id) ?? []
 
     const lines: Array<{
       medicineId: string
@@ -82,10 +149,9 @@ export async function POST(req: Request) {
       name: string
     }> = []
 
-    for (const item of data.items) {
-      const stock: any = inventoryRows.find(
-        (r) => r.medicineId === item.medicineId
-      )
+    for (let i = 0; i < data.items.length; i++) {
+      const item = data.items[i]
+      const stock: any = stockFor(pharmacy, item)
       if (!stock) {
         return NextResponse.json(
           {
@@ -108,16 +174,7 @@ export async function POST(req: Request) {
         )
       }
 
-      const medicine: any = await db.orm.Medicine
-        .where({ id: item.medicineId })
-        .first()
-      if (!medicine) {
-        return NextResponse.json(
-          { error: 'Medicine not found', medicineId: item.medicineId },
-          { status: 404 }
-        )
-      }
-
+      const medicine = medicines[i]
       lines.push({
         medicineId: medicine.id,
         quantity: item.quantity,
@@ -127,10 +184,7 @@ export async function POST(req: Request) {
       })
     }
 
-    const needsRx = lines.some((l) => l.requiresPrescription)
-
-    if (needsRx && !data.prescriptionId) {
-      return NextResponse.json(
+    if (needsRx && !data.prescriptionId) {      return NextResponse.json(
         {
           error: 'PRESCRIPTION_REQUIRED',
           message:
