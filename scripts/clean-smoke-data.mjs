@@ -41,8 +41,18 @@ const users = db
 
 for (const u of users) phones.add(u.phone)
 
-/** Stock is decremented per order, so deletions have to put it back. */
-function restoreStock(orderId) {
+/**
+ * Stock is decremented when an order is placed, so deleting the order has to
+ * put it back.
+ *
+ * Cancelled and rejected orders are the exception: the application already
+ * released their stock at that point, so adding it again would quietly inflate
+ * inventory on every run.
+ */
+const STOCK_ALREADY_RELEASED = new Set(['CANCELLED', 'RX_REJECTED'])
+
+function restoreStock(orderId, status) {
+  if (STOCK_ALREADY_RELEASED.has(String(status))) return
   const items = db.prepare('SELECT * FROM OrderItem WHERE orderId = ?').all(orderId)
   for (const item of items) {
     db.prepare(
@@ -58,8 +68,8 @@ let removedUsers = 0
 
 for (const u of users) {
   for (const c of db.prepare('SELECT id FROM Customer WHERE userId = ?').all(u.id)) {
-    for (const o of db.prepare('SELECT id FROM "Order" WHERE customerId = ?').all(c.id)) {
-      restoreStock(o.id)
+    for (const o of db.prepare('SELECT id, status FROM "Order" WHERE customerId = ?').all(c.id)) {
+      restoreStock(o.id, o.status)
       db.prepare('DELETE FROM OrderItem WHERE orderId = ?').run(o.id)
       db.prepare('DELETE FROM TrackingEvent WHERE orderId = ?').run(o.id)
       db.prepare('DELETE FROM Payment WHERE orderId = ?').run(o.id)
