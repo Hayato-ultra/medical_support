@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid credentials')
         }
 
-        const user = await db.orm.public.User.where({ email: credentials.email }).first()
+        const user = await db.orm.User.where({ email: credentials.email }).first()
 
         if (!user || !user.passwordHash) {
           throw new Error('Invalid credentials')
@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role as 'CUSTOMER' | 'PHARMACY_OWNER' | 'PHARMACY_STAFF' | 'RIDER' | 'ADMIN'
         }
       }
     })

@@ -1,68 +1,68 @@
 {
   "schemaVersion": "1",
   "targetFamily": "sql",
-  "target": "postgres",
-  "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
+  "target": "sqlite",
+  "profileHash": "260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53",
   "roots": {
-    "address": {
+    "Address": {
       "model": "Address",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "customer": {
+    "Customer": {
       "model": "Customer",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "inventory": {
+    "Inventory": {
       "model": "Inventory",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "medicine": {
+    "Medicine": {
       "model": "Medicine",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "order": {
+    "Order": {
       "model": "Order",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "orderItem": {
+    "OrderItem": {
       "model": "OrderItem",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "payment": {
+    "Payment": {
       "model": "Payment",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "pharmacy": {
+    "Pharmacy": {
       "model": "Pharmacy",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "pharmacyStaff": {
+    "PharmacyStaff": {
       "model": "PharmacyStaff",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "prescription": {
+    "Prescription": {
       "model": "Prescription",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "rider": {
+    "Rider": {
       "model": "Rider",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "trackingEvent": {
+    "TrackingEvent": {
       "model": "TrackingEvent",
-      "namespace": "public"
+      "namespace": "__unbound__"
     },
-    "user": {
+    "User": {
       "model": "User",
-      "namespace": "public"
+      "namespace": "__unbound__"
     }
   },
   "domain": {
     "namespaces": {
-      "public": {
+      "__unbound__": {
         "enum": {
           "OrderStatus": {
-            "codecId": "pg/text@1",
+            "codecId": "sqlite/text@1",
             "members": [
               {
                 "name": "PENDING",
@@ -95,7 +95,7 @@
             ]
           },
           "PaymentStatus": {
-            "codecId": "pg/text@1",
+            "codecId": "sqlite/text@1",
             "members": [
               {
                 "name": "PENDING",
@@ -116,7 +116,7 @@
             ]
           },
           "PrescriptionStatus": {
-            "codecId": "pg/text@1",
+            "codecId": "sqlite/text@1",
             "members": [
               {
                 "name": "PENDING",
@@ -133,7 +133,7 @@
             ]
           },
           "StaffRole": {
-            "codecId": "pg/text@1",
+            "codecId": "sqlite/text@1",
             "members": [
               {
                 "name": "OWNER",
@@ -150,7 +150,7 @@
             ]
           },
           "UserRole": {
-            "codecId": "pg/text@1",
+            "codecId": "sqlite/text@1",
             "members": [
               {
                 "name": "CUSTOMER",
@@ -181,56 +181,56 @@
               "address": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "isDefault": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/bool@1",
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               },
               "label": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "latitude": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/float8@1",
+                  "codecId": "sqlite/real@1",
                   "kind": "scalar"
                 }
               },
               "longitude": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/float8@1",
+                  "codecId": "sqlite/real@1",
                   "kind": "scalar"
                 }
               },
               "pincode": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -249,7 +249,7 @@
                 },
                 "to": {
                   "model": "Customer",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -280,8 +280,8 @@
                   "column": "pincode"
                 }
               },
-              "namespaceId": "public",
-              "table": "address"
+              "namespaceId": "__unbound__",
+              "table": "Address"
             }
           },
           "Customer": {
@@ -289,28 +289,28 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "name": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "phone": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "userId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -328,7 +328,7 @@
                 },
                 "to": {
                   "model": "Address",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "orders": {
@@ -343,7 +343,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "user": {
@@ -359,7 +359,7 @@
                 },
                 "to": {
                   "model": "User",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -378,8 +378,8 @@
                   "column": "userId"
                 }
               },
-              "namespaceId": "public",
-              "table": "customer"
+              "namespaceId": "__unbound__",
+              "table": "Customer"
             }
           },
           "Inventory": {
@@ -387,49 +387,49 @@
               "batchNumber": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "expiryDate": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "medicineId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "pharmacyId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "price": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/numeric@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "quantity": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               }
@@ -448,7 +448,7 @@
                 },
                 "to": {
                   "model": "Medicine",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "pharmacy": {
@@ -464,7 +464,7 @@
                 },
                 "to": {
                   "model": "Pharmacy",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -492,8 +492,8 @@
                   "column": "quantity"
                 }
               },
-              "namespaceId": "public",
-              "table": "inventory"
+              "namespaceId": "__unbound__",
+              "table": "Inventory"
             }
           },
           "Medicine": {
@@ -501,63 +501,63 @@
               "category": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "description": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "dosageForm": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "imageUrl": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "manufacturer": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "name": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "requiresPrescription": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/bool@1",
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               },
               "strength": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -575,7 +575,7 @@
                 },
                 "to": {
                   "model": "Inventory",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "orderItems": {
@@ -590,7 +590,7 @@
                 },
                 "to": {
                   "model": "OrderItem",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -624,8 +624,8 @@
                   "column": "strength"
                 }
               },
-              "namespaceId": "public",
-              "table": "medicine"
+              "namespaceId": "__unbound__",
+              "table": "Medicine"
             }
           },
           "Order": {
@@ -633,97 +633,97 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               },
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "deliveryAddress": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "sqlite/json@1",
                   "kind": "scalar"
                 }
               },
               "deliveryFee": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/numeric@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "notes": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "orderNumber": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "paymentIntentId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "pharmacyId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "prescriptionId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "riderId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "status": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 },
                 "valueSet": {
                   "entityKind": "enum",
                   "entityName": "OrderStatus",
-                  "namespaceId": "public",
+                  "namespaceId": "__unbound__",
                   "plane": "domain"
                 }
               },
               "totalAmount": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/numeric@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -742,7 +742,7 @@
                 },
                 "to": {
                   "model": "Customer",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "items": {
@@ -757,7 +757,7 @@
                 },
                 "to": {
                   "model": "OrderItem",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "payment": {
@@ -773,7 +773,7 @@
                 },
                 "to": {
                   "model": "Payment",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "pharmacy": {
@@ -789,7 +789,7 @@
                 },
                 "to": {
                   "model": "Pharmacy",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "prescription": {
@@ -805,7 +805,7 @@
                 },
                 "to": {
                   "model": "Prescription",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "rider": {
@@ -821,7 +821,7 @@
                 },
                 "to": {
                   "model": "Rider",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "tracking": {
@@ -836,7 +836,7 @@
                 },
                 "to": {
                   "model": "TrackingEvent",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -882,8 +882,8 @@
                   "column": "totalAmount"
                 }
               },
-              "namespaceId": "public",
-              "table": "order"
+              "namespaceId": "__unbound__",
+              "table": "Order"
             }
           },
           "OrderItem": {
@@ -891,35 +891,35 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "medicineId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "orderId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "price": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/numeric@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "quantity": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               }
@@ -938,7 +938,7 @@
                 },
                 "to": {
                   "model": "Medicine",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "order": {
@@ -954,7 +954,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -976,8 +976,8 @@
                   "column": "quantity"
                 }
               },
-              "namespaceId": "public",
-              "table": "orderItem"
+              "namespaceId": "__unbound__",
+              "table": "OrderItem"
             }
           },
           "Payment": {
@@ -985,62 +985,62 @@
               "amount": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/numeric@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               },
               "currency": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "orderId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "paymentMethod": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "status": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 },
                 "valueSet": {
                   "entityKind": "enum",
                   "entityName": "PaymentStatus",
-                  "namespaceId": "public",
+                  "namespaceId": "__unbound__",
                   "plane": "domain"
                 }
               },
               "transactionId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -1059,7 +1059,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1090,8 +1090,8 @@
                   "column": "transactionId"
                 }
               },
-              "namespaceId": "public",
-              "table": "payment"
+              "namespaceId": "__unbound__",
+              "table": "Payment"
             }
           },
           "Pharmacy": {
@@ -1099,63 +1099,63 @@
               "address": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "isActive": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/bool@1",
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               },
               "latitude": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/float8@1",
+                  "codecId": "sqlite/real@1",
                   "kind": "scalar"
                 }
               },
               "licenseNumber": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "longitude": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/float8@1",
+                  "codecId": "sqlite/real@1",
                   "kind": "scalar"
                 }
               },
               "name": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "operatingHours": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "sqlite/json@1",
                   "kind": "scalar"
                 }
               },
               "pincode": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -1173,7 +1173,7 @@
                 },
                 "to": {
                   "model": "Inventory",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "orders": {
@@ -1188,7 +1188,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "staff": {
@@ -1203,7 +1203,7 @@
                 },
                 "to": {
                   "model": "PharmacyStaff",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1237,8 +1237,8 @@
                   "column": "pincode"
                 }
               },
-              "namespaceId": "public",
-              "table": "pharmacy"
+              "namespaceId": "__unbound__",
+              "table": "Pharmacy"
             }
           },
           "PharmacyStaff": {
@@ -1246,34 +1246,34 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "pharmacyId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "role": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 },
                 "valueSet": {
                   "entityKind": "enum",
                   "entityName": "StaffRole",
-                  "namespaceId": "public",
+                  "namespaceId": "__unbound__",
                   "plane": "domain"
                 }
               },
               "userId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -1292,7 +1292,7 @@
                 },
                 "to": {
                   "model": "Pharmacy",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "user": {
@@ -1308,7 +1308,7 @@
                 },
                 "to": {
                   "model": "User",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1327,8 +1327,8 @@
                   "column": "userId"
                 }
               },
-              "namespaceId": "public",
-              "table": "pharmacyStaff"
+              "namespaceId": "__unbound__",
+              "table": "PharmacyStaff"
             }
           },
           "Prescription": {
@@ -1336,55 +1336,55 @@
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "imageUrl": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "notes": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "status": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 },
                 "valueSet": {
                   "entityKind": "enum",
                   "entityName": "PrescriptionStatus",
-                  "namespaceId": "public",
+                  "namespaceId": "__unbound__",
                   "plane": "domain"
                 }
               },
               "verifiedAt": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               },
               "verifiedBy": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -1403,7 +1403,7 @@
                 },
                 "to": {
                   "model": "Customer",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "orders": {
@@ -1418,7 +1418,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1446,8 +1446,8 @@
                   "column": "verifiedBy"
                 }
               },
-              "namespaceId": "public",
-              "table": "prescription"
+              "namespaceId": "__unbound__",
+              "table": "Prescription"
             }
           },
           "Rider": {
@@ -1455,63 +1455,63 @@
               "currentLat": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/float8@1",
+                  "codecId": "sqlite/real@1",
                   "kind": "scalar"
                 }
               },
               "currentLng": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/float8@1",
+                  "codecId": "sqlite/real@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "isAvailable": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/bool@1",
+                  "codecId": "sqlite/integer@1",
                   "kind": "scalar"
                 }
               },
               "licensePlate": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "name": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "phone": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "userId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "vehicleType": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               }
@@ -1529,7 +1529,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "user": {
@@ -1545,7 +1545,7 @@
                 },
                 "to": {
                   "model": "User",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1579,8 +1579,8 @@
                   "column": "vehicleType"
                 }
               },
-              "namespaceId": "public",
-              "table": "rider"
+              "namespaceId": "__unbound__",
+              "table": "Rider"
             }
           },
           "TrackingEvent": {
@@ -1588,42 +1588,42 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "location": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/json@1",
+                  "codecId": "sqlite/json@1",
                   "kind": "scalar"
                 }
               },
               "notes": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "orderId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "status": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "timestamp": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               }
@@ -1642,7 +1642,7 @@
                 },
                 "to": {
                   "model": "Order",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1667,8 +1667,8 @@
                   "column": "timestamp"
                 }
               },
-              "namespaceId": "public",
-              "table": "trackingEvent"
+              "namespaceId": "__unbound__",
+              "table": "TrackingEvent"
             }
           },
           "User": {
@@ -1676,48 +1676,48 @@
               "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               },
               "email": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "passwordHash": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "phone": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 }
               },
               "role": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "kind": "scalar"
                 },
                 "valueSet": {
                   "entityKind": "enum",
                   "entityName": "UserRole",
-                  "namespaceId": "public",
+                  "namespaceId": "__unbound__",
                   "plane": "domain"
                 }
               }
@@ -1736,7 +1736,7 @@
                 },
                 "to": {
                   "model": "Customer",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "pharmacyStaff": {
@@ -1752,7 +1752,7 @@
                 },
                 "to": {
                   "model": "PharmacyStaff",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               },
               "rider": {
@@ -1768,7 +1768,7 @@
                 },
                 "to": {
                   "model": "Rider",
-                  "namespace": "public"
+                  "namespace": "__unbound__"
                 }
               }
             },
@@ -1793,8 +1793,8 @@
                   "column": "role"
                 }
               },
-              "namespaceId": "public",
-              "table": "user"
+              "namespaceId": "__unbound__",
+              "table": "User"
             }
           }
         }
@@ -1803,52 +1803,48 @@
   },
   "storage": {
     "namespaces": {
-      "public": {
+      "__unbound__": {
         "entries": {
           "table": {
-            "address": {
+            "Address": {
               "columns": {
                 "address": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "customerId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "isDefault": {
-                  "codecId": "pg/bool@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": false
-                  },
-                  "nativeType": "bool",
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 },
                 "label": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "latitude": {
-                  "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "codecId": "sqlite/real@1",
+                  "nativeType": "real",
                   "nullable": false
                 },
                 "longitude": {
-                  "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "codecId": "sqlite/real@1",
+                  "nativeType": "real",
                   "nullable": false
                 },
                 "pincode": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 }
@@ -1859,15 +1855,15 @@
                     "columns": [
                       "customerId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "address"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Address"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "customer"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Customer"
                   }
                 }
               ],
@@ -1876,8 +1872,8 @@
                   "columns": [
                     "customerId"
                   ],
-                  "name": "address_customerId_idx_b2a8a46c",
-                  "prefix": "address_customerId_idx",
+                  "name": "Address_customerId_idx_b2a8a46c",
+                  "prefix": "Address_customerId_idx",
                   "unique": false
                 }
               ],
@@ -1888,25 +1884,25 @@
               },
               "uniques": []
             },
-            "customer": {
+            "Customer": {
               "columns": {
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "phone": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "userId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 }
@@ -1917,15 +1913,15 @@
                     "columns": [
                       "userId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "customer"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Customer"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "user"
+                    "namespaceId": "__unbound__",
+                    "tableName": "User"
                   }
                 }
               ],
@@ -1943,41 +1939,41 @@
                 }
               ]
             },
-            "inventory": {
+            "Inventory": {
               "columns": {
                 "batchNumber": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "expiryDate": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "medicineId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "pharmacyId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "price": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "quantity": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 }
               },
@@ -1987,15 +1983,15 @@
                     "columns": [
                       "pharmacyId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "inventory"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Inventory"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "pharmacy"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Pharmacy"
                   }
                 },
                 {
@@ -2003,15 +1999,15 @@
                     "columns": [
                       "medicineId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "inventory"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Inventory"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "medicine"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Medicine"
                   }
                 }
               ],
@@ -2020,16 +2016,16 @@
                   "columns": [
                     "medicineId"
                   ],
-                  "name": "inventory_medicineId_idx_72456445",
-                  "prefix": "inventory_medicineId_idx",
+                  "name": "Inventory_medicineId_idx_72456445",
+                  "prefix": "Inventory_medicineId_idx",
                   "unique": false
                 },
                 {
                   "columns": [
                     "pharmacyId"
                   ],
-                  "name": "inventory_pharmacyId_idx_efba3efc",
-                  "prefix": "inventory_pharmacyId_idx",
+                  "name": "Inventory_pharmacyId_idx_efba3efc",
+                  "prefix": "Inventory_pharmacyId_idx",
                   "unique": false
                 }
               ],
@@ -2047,54 +2043,50 @@
                 }
               ]
             },
-            "medicine": {
+            "Medicine": {
               "columns": {
                 "category": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "description": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "dosageForm": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "imageUrl": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "manufacturer": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "requiresPrescription": {
-                  "codecId": "pg/bool@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": false
-                  },
-                  "nativeType": "bool",
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 },
                 "strength": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 }
@@ -2108,76 +2100,69 @@
               },
               "uniques": []
             },
-            "order": {
-              "checks": [
-                {
-                  "expression": "\"status\" IN ('PENDING', 'CONFIRMED', 'PACKING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED')",
-                  "name": "order_status_check_445f80d0",
-                  "prefix": "order_status_check"
-                }
-              ],
+            "Order": {
               "columns": {
                 "createdAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "customerId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "deliveryAddress": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "sqlite/json@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "deliveryFee": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "notes": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "orderNumber": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "paymentIntentId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "pharmacyId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "prescriptionId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "riderId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "status": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "default": {
                     "kind": "literal",
                     "value": "PENDING"
@@ -2187,13 +2172,13 @@
                   "valueSet": {
                     "entityKind": "valueSet",
                     "entityName": "OrderStatus",
-                    "namespaceId": "public",
+                    "namespaceId": "__unbound__",
                     "plane": "storage"
                   }
                 },
                 "totalAmount": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 }
               },
@@ -2203,15 +2188,15 @@
                     "columns": [
                       "customerId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "customer"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Customer"
                   }
                 },
                 {
@@ -2219,15 +2204,15 @@
                     "columns": [
                       "pharmacyId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "pharmacy"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Pharmacy"
                   }
                 },
                 {
@@ -2235,15 +2220,15 @@
                     "columns": [
                       "prescriptionId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "prescription"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Prescription"
                   }
                 },
                 {
@@ -2251,15 +2236,15 @@
                     "columns": [
                       "riderId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "rider"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Rider"
                   }
                 }
               ],
@@ -2268,32 +2253,32 @@
                   "columns": [
                     "customerId"
                   ],
-                  "name": "order_customerId_idx_b2a8a46c",
-                  "prefix": "order_customerId_idx",
+                  "name": "Order_customerId_idx_b2a8a46c",
+                  "prefix": "Order_customerId_idx",
                   "unique": false
                 },
                 {
                   "columns": [
                     "pharmacyId"
                   ],
-                  "name": "order_pharmacyId_idx_efba3efc",
-                  "prefix": "order_pharmacyId_idx",
+                  "name": "Order_pharmacyId_idx_efba3efc",
+                  "prefix": "Order_pharmacyId_idx",
                   "unique": false
                 },
                 {
                   "columns": [
                     "prescriptionId"
                   ],
-                  "name": "order_prescriptionId_idx_1e72349e",
-                  "prefix": "order_prescriptionId_idx",
+                  "name": "Order_prescriptionId_idx_1e72349e",
+                  "prefix": "Order_prescriptionId_idx",
                   "unique": false
                 },
                 {
                   "columns": [
                     "riderId"
                   ],
-                  "name": "order_riderId_idx_966752c5",
-                  "prefix": "order_riderId_idx",
+                  "name": "Order_riderId_idx_966752c5",
+                  "prefix": "Order_riderId_idx",
                   "unique": false
                 }
               ],
@@ -2310,31 +2295,31 @@
                 }
               ]
             },
-            "orderItem": {
+            "OrderItem": {
               "columns": {
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "medicineId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "orderId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "price": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "quantity": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 }
               },
@@ -2344,15 +2329,15 @@
                     "columns": [
                       "orderId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "orderItem"
+                    "namespaceId": "__unbound__",
+                    "tableName": "OrderItem"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   }
                 },
                 {
@@ -2360,15 +2345,15 @@
                     "columns": [
                       "medicineId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "orderItem"
+                    "namespaceId": "__unbound__",
+                    "tableName": "OrderItem"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "medicine"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Medicine"
                   }
                 }
               ],
@@ -2377,16 +2362,16 @@
                   "columns": [
                     "medicineId"
                   ],
-                  "name": "orderItem_medicineId_idx_72456445",
-                  "prefix": "orderItem_medicineId_idx",
+                  "name": "OrderItem_medicineId_idx_72456445",
+                  "prefix": "OrderItem_medicineId_idx",
                   "unique": false
                 },
                 {
                   "columns": [
                     "orderId"
                   ],
-                  "name": "orderItem_orderId_idx_d284871b",
-                  "prefix": "orderItem_orderId_idx",
+                  "name": "OrderItem_orderId_idx_d284871b",
+                  "prefix": "OrderItem_orderId_idx",
                   "unique": false
                 }
               ],
@@ -2397,55 +2382,44 @@
               },
               "uniques": []
             },
-            "payment": {
-              "checks": [
-                {
-                  "expression": "\"status\" IN ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED')",
-                  "name": "payment_status_check_eb2dfa4f",
-                  "prefix": "payment_status_check"
-                }
-              ],
+            "Payment": {
               "columns": {
                 "amount": {
-                  "codecId": "pg/numeric@1",
-                  "nativeType": "numeric",
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "createdAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "currency": {
-                  "codecId": "pg/text@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": "INR"
-                  },
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "orderId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "paymentMethod": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "status": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "default": {
                     "kind": "literal",
                     "value": "PENDING"
@@ -2455,12 +2429,12 @@
                   "valueSet": {
                     "entityKind": "valueSet",
                     "entityName": "PaymentStatus",
-                    "namespaceId": "public",
+                    "namespaceId": "__unbound__",
                     "plane": "storage"
                   }
                 },
                 "transactionId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 }
@@ -2471,15 +2445,15 @@
                     "columns": [
                       "orderId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "payment"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Payment"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   }
                 }
               ],
@@ -2497,54 +2471,50 @@
                 }
               ]
             },
-            "pharmacy": {
+            "Pharmacy": {
               "columns": {
                 "address": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "isActive": {
-                  "codecId": "pg/bool@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": true
-                  },
-                  "nativeType": "bool",
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 },
                 "latitude": {
-                  "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "codecId": "sqlite/real@1",
+                  "nativeType": "real",
                   "nullable": false
                 },
                 "licenseNumber": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "longitude": {
-                  "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "codecId": "sqlite/real@1",
+                  "nativeType": "real",
                   "nullable": false
                 },
                 "name": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "operatingHours": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "sqlite/json@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "pincode": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 }
@@ -2564,27 +2534,20 @@
                 }
               ]
             },
-            "pharmacyStaff": {
-              "checks": [
-                {
-                  "expression": "\"role\" IN ('OWNER', 'MANAGER', 'STAFF')",
-                  "name": "pharmacyStaff_role_check_6fc3012b",
-                  "prefix": "pharmacyStaff_role_check"
-                }
-              ],
+            "PharmacyStaff": {
               "columns": {
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "pharmacyId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "role": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "default": {
                     "kind": "literal",
                     "value": "STAFF"
@@ -2594,12 +2557,12 @@
                   "valueSet": {
                     "entityKind": "valueSet",
                     "entityName": "StaffRole",
-                    "namespaceId": "public",
+                    "namespaceId": "__unbound__",
                     "plane": "storage"
                   }
                 },
                 "userId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 }
@@ -2610,15 +2573,15 @@
                     "columns": [
                       "userId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "pharmacyStaff"
+                    "namespaceId": "__unbound__",
+                    "tableName": "PharmacyStaff"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "user"
+                    "namespaceId": "__unbound__",
+                    "tableName": "User"
                   }
                 },
                 {
@@ -2626,15 +2589,15 @@
                     "columns": [
                       "pharmacyId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "pharmacyStaff"
+                    "namespaceId": "__unbound__",
+                    "tableName": "PharmacyStaff"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "pharmacy"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Pharmacy"
                   }
                 }
               ],
@@ -2643,8 +2606,8 @@
                   "columns": [
                     "pharmacyId"
                   ],
-                  "name": "pharmacyStaff_pharmacyId_idx_efba3efc",
-                  "prefix": "pharmacyStaff_pharmacyId_idx",
+                  "name": "PharmacyStaff_pharmacyId_idx_efba3efc",
+                  "prefix": "PharmacyStaff_pharmacyId_idx",
                   "unique": false
                 }
               ],
@@ -2661,37 +2624,30 @@
                 }
               ]
             },
-            "prescription": {
-              "checks": [
-                {
-                  "expression": "\"status\" IN ('PENDING', 'VERIFIED', 'REJECTED')",
-                  "name": "prescription_status_check_0760bcc2",
-                  "prefix": "prescription_status_check"
-                }
-              ],
+            "Prescription": {
               "columns": {
                 "customerId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "imageUrl": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "notes": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "status": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "default": {
                     "kind": "literal",
                     "value": "PENDING"
@@ -2701,17 +2657,17 @@
                   "valueSet": {
                     "entityKind": "valueSet",
                     "entityName": "PrescriptionStatus",
-                    "namespaceId": "public",
+                    "namespaceId": "__unbound__",
                     "plane": "storage"
                   }
                 },
                 "verifiedAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "verifiedBy": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 }
@@ -2722,15 +2678,15 @@
                     "columns": [
                       "customerId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "prescription"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Prescription"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "customer"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Customer"
                   }
                 }
               ],
@@ -2739,8 +2695,8 @@
                   "columns": [
                     "customerId"
                   ],
-                  "name": "prescription_customerId_idx_b2a8a46c",
-                  "prefix": "prescription_customerId_idx",
+                  "name": "Prescription_customerId_idx_b2a8a46c",
+                  "prefix": "Prescription_customerId_idx",
                   "unique": false
                 }
               ],
@@ -2751,54 +2707,50 @@
               },
               "uniques": []
             },
-            "rider": {
+            "Rider": {
               "columns": {
                 "currentLat": {
-                  "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "codecId": "sqlite/real@1",
+                  "nativeType": "real",
                   "nullable": true
                 },
                 "currentLng": {
-                  "codecId": "pg/float8@1",
-                  "nativeType": "float8",
+                  "codecId": "sqlite/real@1",
+                  "nativeType": "real",
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "isAvailable": {
-                  "codecId": "pg/bool@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": false
-                  },
-                  "nativeType": "bool",
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
                   "nullable": false
                 },
                 "licensePlate": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "phone": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "userId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "vehicleType": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 }
@@ -2809,15 +2761,15 @@
                     "columns": [
                       "userId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "rider"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Rider"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "user"
+                    "namespaceId": "__unbound__",
+                    "tableName": "User"
                   }
                 }
               ],
@@ -2835,40 +2787,40 @@
                 }
               ]
             },
-            "trackingEvent": {
+            "TrackingEvent": {
               "columns": {
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "location": {
-                  "codecId": "pg/json@1",
-                  "nativeType": "json",
+                  "codecId": "sqlite/json@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "notes": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
                 "orderId": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "status": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "timestamp": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
+                  "nativeType": "text",
                   "nullable": false
                 }
               },
@@ -2878,15 +2830,15 @@
                     "columns": [
                       "orderId"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "trackingEvent"
+                    "namespaceId": "__unbound__",
+                    "tableName": "TrackingEvent"
                   },
                   "target": {
                     "columns": [
                       "id"
                     ],
-                    "namespaceId": "public",
-                    "tableName": "order"
+                    "namespaceId": "__unbound__",
+                    "tableName": "Order"
                   }
                 }
               ],
@@ -2895,8 +2847,8 @@
                   "columns": [
                     "orderId"
                   ],
-                  "name": "trackingEvent_orderId_idx_d284871b",
-                  "prefix": "trackingEvent_orderId_idx",
+                  "name": "TrackingEvent_orderId_idx_d284871b",
+                  "prefix": "TrackingEvent_orderId_idx",
                   "unique": false
                 }
               ],
@@ -2907,46 +2859,39 @@
               },
               "uniques": []
             },
-            "user": {
-              "checks": [
-                {
-                  "expression": "\"role\" IN ('CUSTOMER', 'PHARMACY_OWNER', 'PHARMACY_STAFF', 'RIDER', 'ADMIN')",
-                  "name": "user_role_check_db132599",
-                  "prefix": "user_role_check"
-                }
-              ],
+            "User": {
               "columns": {
                 "createdAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
+                  "codecId": "sqlite/datetime@1",
                   "default": {
                     "expression": "now()",
                     "kind": "function"
                   },
-                  "nativeType": "timestamptz",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "email": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "passwordHash": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "phone": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "role": {
-                  "codecId": "pg/text@1",
+                  "codecId": "sqlite/text@1",
                   "default": {
                     "kind": "literal",
                     "value": "CUSTOMER"
@@ -2956,7 +2901,7 @@
                   "valueSet": {
                     "entityKind": "valueSet",
                     "entityName": "UserRole",
-                    "namespaceId": "public",
+                    "namespaceId": "__unbound__",
                     "plane": "storage"
                   }
                 }
@@ -3032,178 +2977,20 @@
             }
           }
         },
-        "id": "public",
-        "kind": "postgres-schema"
+        "id": "__unbound__"
       }
     },
-    "storageHash": "56769f08355113c0847d4f498c5fc02337d544d5f8526b6e3f3e4439e417a25e"
-  },
-  "execution": {
-    "executionHash": "811b4eccb9e23c8d705a1c71ad8f5bdec50bfdec80439d4d51ff1592242bd557",
-    "mutations": {
-      "defaults": [
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "address"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "customer"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "inventory"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "medicine"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "order"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "orderItem"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "payment"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "pharmacy"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "pharmacyStaff"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "prescription"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "rider"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "trackingEvent"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "user"
-          }
-        }
-      ]
-    }
+    "storageHash": "89e01251e3a18a7ae2f014b91303bc97b87cbc9268db9ea1594a761242701a2a"
   },
   "capabilities": {
-    "postgres": {
-      "distinctOn": true,
+    "sql": {
+      "foreignKeys": true,
+      "insertOnConflictSkip": true,
+      "insertOnConflictWithoutTarget": true,
       "jsonAgg": true,
-      "lateral": true,
       "limit": true,
       "orderBy": true,
       "returning": true
-    },
-    "sql": {
-      "checkConstraint": true,
-      "defaultInInsert": true,
-      "enums": true,
-      "lateral": true,
-      "returning": true,
-      "scalarList": true
     }
   },
   "extensions": {},

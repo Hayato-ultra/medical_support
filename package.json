@@ -12,8 +12,7 @@
     "contract:emit": "prisma contract emit"
   },
   "dependencies": {
-    "@prisma/client": "^7.10.0",
-    "@prisma/orm-postgres": "^8.0.0-rc.11",
+    "@prisma/orm-sqlite": "^8.0.0-rc.12",
     "@tanstack/react-query": "^5.103.2",
     "@vercel/blob": "^2.8.0",
     "bcryptjs": "^3.0.3",

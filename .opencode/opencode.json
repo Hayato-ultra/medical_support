@@ -2,5 +2,26 @@
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     ".opencode/plugins/graphify.js"
-  ]
+  ],
+  "mcp": {
+    "21st-dev": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@21st-dev/magic@latest",
+        "API_KEY=\"fe88e8a7eaf3a6bbdd272053445af2b8ce6a863ee44c55bd937794c99844e91d\""
+      ],
+      "enabled": true
+    },
+    "shadcn": {
+      "type": "local",
+      "command": [
+        "npx",
+        "shadcn@latest",
+        "mcp"
+      ],
+      "enabled": true
+    }
+  }
 }

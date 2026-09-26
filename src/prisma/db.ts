@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import postgres from '@prisma/orm-postgres/runtime';
+import sqlite from '@prisma/orm-sqlite/runtime';
 import type { Contract } from './contract.d';
 import contractJson from './contract.json' with { type: 'json' };
 
-export const db = postgres<Contract>({
+export const db = sqlite<Contract>({
   contractJson,
-  url: process.env['DATABASE_URL']!,
+  path: process.env['DATABASE_URL'],
 });
