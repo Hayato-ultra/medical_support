@@ -135,6 +135,8 @@ model Order {
   rider           Rider?        @relation(fields: [riderId], references: [id])
   deliveryAddress Json
   notes           String?
+  deliveryOtp     String?
+  otpVerifiedAt   DateTime?
   createdAt       DateTime      @default(now())
   items           OrderItem[]
   tracking        TrackingEvent[]
@@ -143,7 +145,12 @@ model Order {
 
 enum OrderStatus {
   PENDING
+  PENDING_PAYMENT
+  RX_PENDING
+  RX_REJECTED
   CONFIRMED
+  ACCEPTED
+  PACKED
   PACKING
   READY_FOR_PICKUP
   OUT_FOR_DELIVERY
@@ -202,4 +209,51 @@ model TrackingEvent {
   location  Json?
   timestamp DateTime @default(now())
   notes     String?
+}
+
+model OtpToken {
+  id        String   @id
+  key       String   @unique
+  phone     String
+  otp       String
+  expiresAt DateTime
+  used      Int
+  createdAt DateTime @default(now())
+
+  @@unique([phone, expiresAt])
+}
+
+model PrescriptionLibrary {
+  id             String @id
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id])
+  prescriptionId String
+  imageUrl       String
+  doctorName     String?
+  expiryDate     DateTime?
+  status         String
+  createdAt      DateTime @default(now())
+}
+
+/// Pincodes the platform actually delivers to. Seeded from active pharmacy
+/// locations and grown by operations, so the checkout gate reads from the
+/// database instead of a hardcoded list in application code.
+model ServiceArea {
+  id         String   @id
+  pincode    String   @unique
+  city       String?
+  region     String?
+  isActive   Int
+  createdAt  DateTime @default(now())
+}
+
+/// Customers who tried to check out outside our service areas.
+model WaitlistEntry {
+  id        String   @id
+  pincode   String
+  phone     String
+  notified  Int
+  createdAt DateTime @default(now())
+
+  @@unique([pincode, phone])
 }

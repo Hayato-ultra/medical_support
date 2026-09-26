@@ -17,7 +17,7 @@ import type {
 } from '@prisma/orm-sqlite/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'89e01251e3a18a7ae2f014b91303bc97b87cbc9268db9ea1594a761242701a2a'>;
+  StorageHashBase<'5e803abb78a4c00c75cf53bb40ff2260cc95d63f7119503d92208f374e56880b'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'260b8608d1aacaf1f690779a6cff39a12947c599597c5ba464ca75b9e775df53'>;
@@ -177,6 +177,8 @@ export type FieldOutputTypes = {
       readonly riderId: CodecTypes['sqlite/text@1']['output'] | null;
       readonly deliveryAddress: CodecTypes['sqlite/json@1']['output'];
       readonly notes: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly deliveryOtp: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly otpVerifiedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
     readonly OrderItem: {
@@ -185,6 +187,15 @@ export type FieldOutputTypes = {
       readonly medicineId: CodecTypes['sqlite/text@1']['output'];
       readonly quantity: CodecTypes['sqlite/integer@1']['output'];
       readonly price: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly OtpToken: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly key: CodecTypes['sqlite/text@1']['output'];
+      readonly phone: CodecTypes['sqlite/text@1']['output'];
+      readonly otp: CodecTypes['sqlite/text@1']['output'];
+      readonly expiresAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly used: CodecTypes['sqlite/integer@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
     readonly Payment: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -222,6 +233,16 @@ export type FieldOutputTypes = {
       readonly status: CodecTypes['sqlite/text@1']['output'];
       readonly notes: CodecTypes['sqlite/text@1']['output'] | null;
     };
+    readonly PrescriptionLibrary: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly customerId: CodecTypes['sqlite/text@1']['output'];
+      readonly prescriptionId: CodecTypes['sqlite/text@1']['output'];
+      readonly imageUrl: CodecTypes['sqlite/text@1']['output'];
+      readonly doctorName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly expiryDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
     readonly Rider: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly userId: CodecTypes['sqlite/text@1']['output'];
@@ -232,6 +253,14 @@ export type FieldOutputTypes = {
       readonly isAvailable: CodecTypes['sqlite/integer@1']['output'];
       readonly currentLat: CodecTypes['sqlite/real@1']['output'] | null;
       readonly currentLng: CodecTypes['sqlite/real@1']['output'] | null;
+    };
+    readonly ServiceArea: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly pincode: CodecTypes['sqlite/text@1']['output'];
+      readonly city: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly region: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly isActive: CodecTypes['sqlite/integer@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
     readonly TrackingEvent: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -247,6 +276,13 @@ export type FieldOutputTypes = {
       readonly phone: CodecTypes['sqlite/text@1']['output'];
       readonly passwordHash: CodecTypes['sqlite/text@1']['output'];
       readonly role: CodecTypes['sqlite/text@1']['output'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    };
+    readonly WaitlistEntry: {
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly pincode: CodecTypes['sqlite/text@1']['output'];
+      readonly phone: CodecTypes['sqlite/text@1']['output'];
+      readonly notified: CodecTypes['sqlite/integer@1']['output'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
     };
   };
@@ -302,6 +338,8 @@ export type FieldInputTypes = {
       readonly riderId: CodecTypes['sqlite/text@1']['input'] | null;
       readonly deliveryAddress: CodecTypes['sqlite/json@1']['input'];
       readonly notes: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly deliveryOtp: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly otpVerifiedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
     readonly OrderItem: {
@@ -310,6 +348,15 @@ export type FieldInputTypes = {
       readonly medicineId: CodecTypes['sqlite/text@1']['input'];
       readonly quantity: CodecTypes['sqlite/integer@1']['input'];
       readonly price: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly OtpToken: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly key: CodecTypes['sqlite/text@1']['input'];
+      readonly phone: CodecTypes['sqlite/text@1']['input'];
+      readonly otp: CodecTypes['sqlite/text@1']['input'];
+      readonly expiresAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly used: CodecTypes['sqlite/integer@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
     readonly Payment: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -347,6 +394,16 @@ export type FieldInputTypes = {
       readonly status: CodecTypes['sqlite/text@1']['input'];
       readonly notes: CodecTypes['sqlite/text@1']['input'] | null;
     };
+    readonly PrescriptionLibrary: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly customerId: CodecTypes['sqlite/text@1']['input'];
+      readonly prescriptionId: CodecTypes['sqlite/text@1']['input'];
+      readonly imageUrl: CodecTypes['sqlite/text@1']['input'];
+      readonly doctorName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly expiryDate: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
     readonly Rider: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly userId: CodecTypes['sqlite/text@1']['input'];
@@ -357,6 +414,14 @@ export type FieldInputTypes = {
       readonly isAvailable: CodecTypes['sqlite/integer@1']['input'];
       readonly currentLat: CodecTypes['sqlite/real@1']['input'] | null;
       readonly currentLng: CodecTypes['sqlite/real@1']['input'] | null;
+    };
+    readonly ServiceArea: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly pincode: CodecTypes['sqlite/text@1']['input'];
+      readonly city: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly region: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly isActive: CodecTypes['sqlite/integer@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
     readonly TrackingEvent: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -372,6 +437,13 @@ export type FieldInputTypes = {
       readonly phone: CodecTypes['sqlite/text@1']['input'];
       readonly passwordHash: CodecTypes['sqlite/text@1']['input'];
       readonly role: CodecTypes['sqlite/text@1']['input'];
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+    };
+    readonly WaitlistEntry: {
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly pincode: CodecTypes['sqlite/text@1']['input'];
+      readonly phone: CodecTypes['sqlite/text@1']['input'];
+      readonly notified: CodecTypes['sqlite/integer@1']['input'];
       readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
     };
   };
@@ -419,9 +491,11 @@ export type StorageColumnTypes = {
       readonly customerId: CodecTypes['sqlite/text@1']['output'];
       readonly deliveryAddress: CodecTypes['sqlite/json@1']['output'];
       readonly deliveryFee: CodecTypes['sqlite/text@1']['output'];
+      readonly deliveryOtp: CodecTypes['sqlite/text@1']['output'] | null;
       readonly id: CodecTypes['sqlite/text@1']['output'];
       readonly notes: CodecTypes['sqlite/text@1']['output'] | null;
       readonly orderNumber: CodecTypes['sqlite/text@1']['output'];
+      readonly otpVerifiedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly paymentIntentId: CodecTypes['sqlite/text@1']['output'] | null;
       readonly pharmacyId: CodecTypes['sqlite/text@1']['output'];
       readonly prescriptionId: CodecTypes['sqlite/text@1']['output'] | null;
@@ -435,6 +509,15 @@ export type StorageColumnTypes = {
       readonly orderId: CodecTypes['sqlite/text@1']['output'];
       readonly price: CodecTypes['sqlite/text@1']['output'];
       readonly quantity: CodecTypes['sqlite/integer@1']['output'];
+    };
+    readonly OtpToken: {
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly expiresAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly key: CodecTypes['sqlite/text@1']['output'];
+      readonly otp: CodecTypes['sqlite/text@1']['output'];
+      readonly phone: CodecTypes['sqlite/text@1']['output'];
+      readonly used: CodecTypes['sqlite/integer@1']['output'];
     };
     readonly Payment: {
       readonly amount: CodecTypes['sqlite/text@1']['output'];
@@ -472,6 +555,16 @@ export type StorageColumnTypes = {
       readonly verifiedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
       readonly verifiedBy: CodecTypes['sqlite/text@1']['output'] | null;
     };
+    readonly PrescriptionLibrary: {
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly customerId: CodecTypes['sqlite/text@1']['output'];
+      readonly doctorName: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly expiryDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly imageUrl: CodecTypes['sqlite/text@1']['output'];
+      readonly prescriptionId: CodecTypes['sqlite/text@1']['output'];
+      readonly status: CodecTypes['sqlite/text@1']['output'];
+    };
     readonly Rider: {
       readonly currentLat: CodecTypes['sqlite/real@1']['output'] | null;
       readonly currentLng: CodecTypes['sqlite/real@1']['output'] | null;
@@ -482,6 +575,14 @@ export type StorageColumnTypes = {
       readonly phone: CodecTypes['sqlite/text@1']['output'];
       readonly userId: CodecTypes['sqlite/text@1']['output'];
       readonly vehicleType: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly ServiceArea: {
+      readonly city: CodecTypes['sqlite/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly isActive: CodecTypes['sqlite/integer@1']['output'];
+      readonly pincode: CodecTypes['sqlite/text@1']['output'];
+      readonly region: CodecTypes['sqlite/text@1']['output'] | null;
     };
     readonly TrackingEvent: {
       readonly id: CodecTypes['sqlite/text@1']['output'];
@@ -498,6 +599,13 @@ export type StorageColumnTypes = {
       readonly passwordHash: CodecTypes['sqlite/text@1']['output'];
       readonly phone: CodecTypes['sqlite/text@1']['output'];
       readonly role: CodecTypes['sqlite/text@1']['output'];
+    };
+    readonly WaitlistEntry: {
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['output'];
+      readonly id: CodecTypes['sqlite/text@1']['output'];
+      readonly notified: CodecTypes['sqlite/integer@1']['output'];
+      readonly phone: CodecTypes['sqlite/text@1']['output'];
+      readonly pincode: CodecTypes['sqlite/text@1']['output'];
     };
   };
 };
@@ -544,9 +652,11 @@ export type StorageColumnInputTypes = {
       readonly customerId: CodecTypes['sqlite/text@1']['input'];
       readonly deliveryAddress: CodecTypes['sqlite/json@1']['input'];
       readonly deliveryFee: CodecTypes['sqlite/text@1']['input'];
+      readonly deliveryOtp: CodecTypes['sqlite/text@1']['input'] | null;
       readonly id: CodecTypes['sqlite/text@1']['input'];
       readonly notes: CodecTypes['sqlite/text@1']['input'] | null;
       readonly orderNumber: CodecTypes['sqlite/text@1']['input'];
+      readonly otpVerifiedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly paymentIntentId: CodecTypes['sqlite/text@1']['input'] | null;
       readonly pharmacyId: CodecTypes['sqlite/text@1']['input'];
       readonly prescriptionId: CodecTypes['sqlite/text@1']['input'] | null;
@@ -560,6 +670,15 @@ export type StorageColumnInputTypes = {
       readonly orderId: CodecTypes['sqlite/text@1']['input'];
       readonly price: CodecTypes['sqlite/text@1']['input'];
       readonly quantity: CodecTypes['sqlite/integer@1']['input'];
+    };
+    readonly OtpToken: {
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly expiresAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly key: CodecTypes['sqlite/text@1']['input'];
+      readonly otp: CodecTypes['sqlite/text@1']['input'];
+      readonly phone: CodecTypes['sqlite/text@1']['input'];
+      readonly used: CodecTypes['sqlite/integer@1']['input'];
     };
     readonly Payment: {
       readonly amount: CodecTypes['sqlite/text@1']['input'];
@@ -597,6 +716,16 @@ export type StorageColumnInputTypes = {
       readonly verifiedAt: CodecTypes['sqlite/datetime@1']['input'] | null;
       readonly verifiedBy: CodecTypes['sqlite/text@1']['input'] | null;
     };
+    readonly PrescriptionLibrary: {
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly customerId: CodecTypes['sqlite/text@1']['input'];
+      readonly doctorName: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly expiryDate: CodecTypes['sqlite/datetime@1']['input'] | null;
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly imageUrl: CodecTypes['sqlite/text@1']['input'];
+      readonly prescriptionId: CodecTypes['sqlite/text@1']['input'];
+      readonly status: CodecTypes['sqlite/text@1']['input'];
+    };
     readonly Rider: {
       readonly currentLat: CodecTypes['sqlite/real@1']['input'] | null;
       readonly currentLng: CodecTypes['sqlite/real@1']['input'] | null;
@@ -607,6 +736,14 @@ export type StorageColumnInputTypes = {
       readonly phone: CodecTypes['sqlite/text@1']['input'];
       readonly userId: CodecTypes['sqlite/text@1']['input'];
       readonly vehicleType: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly ServiceArea: {
+      readonly city: CodecTypes['sqlite/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly isActive: CodecTypes['sqlite/integer@1']['input'];
+      readonly pincode: CodecTypes['sqlite/text@1']['input'];
+      readonly region: CodecTypes['sqlite/text@1']['input'] | null;
     };
     readonly TrackingEvent: {
       readonly id: CodecTypes['sqlite/text@1']['input'];
@@ -623,6 +760,13 @@ export type StorageColumnInputTypes = {
       readonly passwordHash: CodecTypes['sqlite/text@1']['input'];
       readonly phone: CodecTypes['sqlite/text@1']['input'];
       readonly role: CodecTypes['sqlite/text@1']['input'];
+    };
+    readonly WaitlistEntry: {
+      readonly createdAt: CodecTypes['sqlite/datetime@1']['input'];
+      readonly id: CodecTypes['sqlite/text@1']['input'];
+      readonly notified: CodecTypes['sqlite/integer@1']['input'];
+      readonly phone: CodecTypes['sqlite/text@1']['input'];
+      readonly pincode: CodecTypes['sqlite/text@1']['input'];
     };
   };
 };
@@ -737,6 +881,8 @@ export namespace Models {
     riderId: CodecTypes['sqlite/text@1']['output'] | null;
     deliveryAddress: CodecTypes['sqlite/json@1']['output'];
     notes: CodecTypes['sqlite/text@1']['output'] | null;
+    deliveryOtp: CodecTypes['sqlite/text@1']['output'] | null;
+    otpVerifiedAt: CodecTypes['sqlite/datetime@1']['output'] | null;
     createdAt: CodecTypes['sqlite/datetime@1']['output'];
     customer: Customer;
     items: OrderItem[];
@@ -794,6 +940,45 @@ export namespace Models {
     order: Order;
     readonly [RelationKeys]?: 'order';
   };
+  export type OtpToken = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    key: CodecTypes['sqlite/text@1']['output'];
+    phone: CodecTypes['sqlite/text@1']['output'];
+    otp: CodecTypes['sqlite/text@1']['output'];
+    expiresAt: CodecTypes['sqlite/datetime@1']['output'];
+    used: CodecTypes['sqlite/integer@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type PrescriptionLibrary = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    customerId: CodecTypes['sqlite/text@1']['output'];
+    prescriptionId: CodecTypes['sqlite/text@1']['output'];
+    imageUrl: CodecTypes['sqlite/text@1']['output'];
+    doctorName: CodecTypes['sqlite/text@1']['output'] | null;
+    expiryDate: CodecTypes['sqlite/datetime@1']['output'] | null;
+    status: CodecTypes['sqlite/text@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    customer: Customer;
+    readonly [RelationKeys]?: 'customer';
+  };
+  export type ServiceArea = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    pincode: CodecTypes['sqlite/text@1']['output'];
+    city: CodecTypes['sqlite/text@1']['output'] | null;
+    region: CodecTypes['sqlite/text@1']['output'] | null;
+    isActive: CodecTypes['sqlite/integer@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type WaitlistEntry = {
+    id: CodecTypes['sqlite/text@1']['output'];
+    pincode: CodecTypes['sqlite/text@1']['output'];
+    phone: CodecTypes['sqlite/text@1']['output'];
+    notified: CodecTypes['sqlite/integer@1']['output'];
+    createdAt: CodecTypes['sqlite/datetime@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
@@ -810,6 +995,10 @@ export declare const models: {
   Rider: Models.Rider;
   Payment: Models.Payment;
   TrackingEvent: Models.TrackingEvent;
+  OtpToken: Models.OtpToken;
+  PrescriptionLibrary: Models.PrescriptionLibrary;
+  ServiceArea: Models.ServiceArea;
+  WaitlistEntry: Models.WaitlistEntry;
 };
 
 export type TypeMaps = TypeMapsType<
@@ -1139,6 +1328,16 @@ type ContractBase = Omit<
                   readonly codecId: 'sqlite/text@1';
                   readonly nullable: true;
                 };
+                readonly deliveryOtp: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly otpVerifiedAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
                 readonly createdAt: {
                   readonly nativeType: 'text';
                   readonly codecId: 'sqlite/datetime@1';
@@ -1295,6 +1494,53 @@ type ContractBase = Omit<
                   };
                 },
               ];
+            };
+            readonly OtpToken: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly key: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly phone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly otp: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly expiresAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                };
+                readonly used: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['key'] },
+                { readonly columns: readonly ['phone', 'expiresAt'] },
+              ];
+              indexes: readonly [];
+              foreignKeys: readonly [];
             };
             readonly Payment: {
               columns: {
@@ -1546,6 +1792,75 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly PrescriptionLibrary: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly customerId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly prescriptionId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly imageUrl: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly doctorName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly expiryDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: true;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'PrescriptionLibrary_customerId_idx_b2a8a46c';
+                  readonly prefix: 'PrescriptionLibrary_customerId_idx';
+                  readonly columns: readonly ['customerId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: '__unbound__' & NamespaceId;
+                    readonly tableName: 'PrescriptionLibrary';
+                    readonly columns: readonly ['customerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: '__unbound__' & NamespaceId;
+                    readonly tableName: 'Customer';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly Rider: {
               columns: {
                 readonly id: {
@@ -1611,6 +1926,45 @@ type ContractBase = Omit<
                   };
                 },
               ];
+            };
+            readonly ServiceArea: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly pincode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly city: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly region: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: true;
+                };
+                readonly isActive: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['pincode'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
             };
             readonly TrackingEvent: {
               columns: {
@@ -1717,13 +2071,52 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly WaitlistEntry: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly pincode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly phone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/text@1';
+                  readonly nullable: false;
+                };
+                readonly notified: {
+                  readonly nativeType: 'integer';
+                  readonly codecId: 'sqlite/integer@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'sqlite/datetime@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['pincode', 'phone'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
           };
           readonly valueSet: {
             readonly OrderStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly [
                 'PENDING',
+                'PENDING_PAYMENT',
+                'RX_PENDING',
+                'RX_REJECTED',
                 'CONFIRMED',
+                'ACCEPTED',
+                'PACKED',
                 'PACKING',
                 'READY_FOR_PICKUP',
                 'OUT_FOR_DELIVERY',
@@ -1806,6 +2199,22 @@ type ContractBase = Omit<
     readonly TrackingEvent: {
       readonly namespace: '__unbound__' & NamespaceId;
       readonly model: 'TrackingEvent';
+    };
+    readonly OtpToken: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'OtpToken';
+    };
+    readonly PrescriptionLibrary: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'PrescriptionLibrary';
+    };
+    readonly ServiceArea: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'ServiceArea';
+    };
+    readonly WaitlistEntry: {
+      readonly namespace: '__unbound__' & NamespaceId;
+      readonly model: 'WaitlistEntry';
     };
   };
   readonly domain: {
@@ -2142,6 +2551,14 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
               };
+              readonly deliveryOtp: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly otpVerifiedAt: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
@@ -2247,6 +2664,8 @@ type ContractBase = Omit<
                 readonly riderId: { readonly column: 'riderId' };
                 readonly deliveryAddress: { readonly column: 'deliveryAddress' };
                 readonly notes: { readonly column: 'notes' };
+                readonly deliveryOtp: { readonly column: 'deliveryOtp' };
+                readonly otpVerifiedAt: { readonly column: 'otpVerifiedAt' };
                 readonly createdAt: { readonly column: 'createdAt' };
               };
             };
@@ -2309,6 +2728,52 @@ type ContractBase = Omit<
                 readonly medicineId: { readonly column: 'medicineId' };
                 readonly quantity: { readonly column: 'quantity' };
                 readonly price: { readonly column: 'price' };
+              };
+            };
+          };
+          readonly OtpToken: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly key: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly phone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly otp: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly expiresAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly used: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'OtpToken';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly key: { readonly column: 'key' };
+                readonly phone: { readonly column: 'phone' };
+                readonly otp: { readonly column: 'otp' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
+                readonly used: { readonly column: 'used' };
+                readonly createdAt: { readonly column: 'createdAt' };
               };
             };
           };
@@ -2592,6 +3057,70 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly PrescriptionLibrary: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly customerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly prescriptionId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly imageUrl: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly doctorName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly expiryDate: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: {
+              readonly customer: {
+                readonly to: {
+                  readonly namespace: '__unbound__' & NamespaceId;
+                  readonly model: 'Customer';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['customerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'PrescriptionLibrary';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly customerId: { readonly column: 'customerId' };
+                readonly prescriptionId: { readonly column: 'prescriptionId' };
+                readonly imageUrl: { readonly column: 'imageUrl' };
+                readonly doctorName: { readonly column: 'doctorName' };
+                readonly expiryDate: { readonly column: 'expiryDate' };
+                readonly status: { readonly column: 'status' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
           readonly Rider: {
             readonly fields: {
               readonly id: {
@@ -2669,6 +3198,47 @@ type ContractBase = Omit<
                 readonly isAvailable: { readonly column: 'isAvailable' };
                 readonly currentLat: { readonly column: 'currentLat' };
                 readonly currentLng: { readonly column: 'currentLng' };
+              };
+            };
+          };
+          readonly ServiceArea: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly pincode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly city: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly region: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'ServiceArea';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly pincode: { readonly column: 'pincode' };
+                readonly city: { readonly column: 'city' };
+                readonly region: { readonly column: 'region' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly createdAt: { readonly column: 'createdAt' };
               };
             };
           };
@@ -2804,6 +3374,42 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly WaitlistEntry: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly pincode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly phone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/text@1' };
+              };
+              readonly notified: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/integer@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'sqlite/datetime@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'WaitlistEntry';
+              readonly namespaceId: '__unbound__';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly pincode: { readonly column: 'pincode' };
+                readonly phone: { readonly column: 'phone' };
+                readonly notified: { readonly column: 'notified' };
+                readonly createdAt: { readonly column: 'createdAt' };
+              };
+            };
+          };
         };
         readonly enum: {
           readonly UserRole: {
@@ -2836,7 +3442,12 @@ type ContractBase = Omit<
             readonly codecId: 'sqlite/text@1';
             readonly members: readonly [
               { readonly name: 'PENDING'; readonly value: 'PENDING' },
+              { readonly name: 'PENDING_PAYMENT'; readonly value: 'PENDING_PAYMENT' },
+              { readonly name: 'RX_PENDING'; readonly value: 'RX_PENDING' },
+              { readonly name: 'RX_REJECTED'; readonly value: 'RX_REJECTED' },
               { readonly name: 'CONFIRMED'; readonly value: 'CONFIRMED' },
+              { readonly name: 'ACCEPTED'; readonly value: 'ACCEPTED' },
+              { readonly name: 'PACKED'; readonly value: 'PACKED' },
               { readonly name: 'PACKING'; readonly value: 'PACKING' },
               { readonly name: 'READY_FOR_PICKUP'; readonly value: 'READY_FOR_PICKUP' },
               { readonly name: 'OUT_FOR_DELIVERY'; readonly value: 'OUT_FOR_DELIVERY' },

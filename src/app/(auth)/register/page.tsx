@@ -9,6 +9,11 @@ export default function RegisterPage() {
   const router = useRouter()
   const [error, setError] = useState('')
   const [role, setRole] = useState('customer')
+  const [mode, setMode] = useState<'form' | 'phone'>('form')
+  const [phone, setPhone] = useState('')
+  const [otp, setOtp] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [name, setName] = useState('')
 
   const handleSubmit = async (email: string, password: string, name: string) => {
     setError('')
@@ -17,6 +22,53 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name, role }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      router.push('/login')
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed')
+    }
+  }
+
+  const handleSendPhoneOtp = async () => {
+    setError('')
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setOtpSent(true)
+      }
+    } catch (err) {
+      setError('Failed to send OTP')
+    }
+  }
+
+  const handlePhoneRegister = async () => {
+    setError('')
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: `${phone}@medical.com`,
+          password: 'temp-' + Date.now(),
+          name: name || 'User',
+          phone,
+          role,
+          otp,
+        }),
       })
 
       if (!res.ok) {
@@ -53,7 +105,75 @@ export default function RegisterPage() {
           ))}
         </div>
 
-        <AuthForm type="register" onSubmit={handleSubmit} error={error} />
+        <div className="flex gap-2 justify-center">
+          <Button
+            variant={mode === 'form' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setMode('form')}
+          >
+            Email Sign Up
+          </Button>
+          <Button
+            variant={mode === 'phone' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setMode('phone')}
+          >
+            Phone Sign Up
+          </Button>
+        </div>
+
+        {mode === 'form' ? (
+          <AuthForm type="register" onSubmit={handleSubmit} error={error} />
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Full Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="w-full border rounded-lg px-3 py-2 mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Phone Number</label>
+              <input
+                type="tel"
+                maxLength={10}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="9876543210"
+                className="w-full border rounded-lg px-3 py-2 mt-1"
+              />
+            </div>
+            {otpSent ? (
+              <>
+                <div>
+                  <label className="text-sm font-medium">OTP</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="000000"
+                    className="w-full border rounded-lg px-3 py-2 mt-1 text-center text-xl tracking-widest"
+                  />
+                </div>
+                <Button className="w-full" onClick={handlePhoneRegister}>
+                  Complete Registration
+                </Button>
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => { setOtpSent(false); setOtp('') }}>
+                  Resend OTP
+                </Button>
+              </>
+            ) : (
+              <Button className="w-full" onClick={handleSendPhoneOtp}>
+                Send OTP and Register
+              </Button>
+            )}
+          </div>
+        )}
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}

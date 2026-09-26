@@ -28,6 +28,10 @@
       "model": "OrderItem",
       "namespace": "__unbound__"
     },
+    "OtpToken": {
+      "model": "OtpToken",
+      "namespace": "__unbound__"
+    },
     "Payment": {
       "model": "Payment",
       "namespace": "__unbound__"
@@ -44,8 +48,16 @@
       "model": "Prescription",
       "namespace": "__unbound__"
     },
+    "PrescriptionLibrary": {
+      "model": "PrescriptionLibrary",
+      "namespace": "__unbound__"
+    },
     "Rider": {
       "model": "Rider",
+      "namespace": "__unbound__"
+    },
+    "ServiceArea": {
+      "model": "ServiceArea",
       "namespace": "__unbound__"
     },
     "TrackingEvent": {
@@ -54,6 +66,10 @@
     },
     "User": {
       "model": "User",
+      "namespace": "__unbound__"
+    },
+    "WaitlistEntry": {
+      "model": "WaitlistEntry",
       "namespace": "__unbound__"
     }
   },
@@ -69,8 +85,28 @@
                 "value": "PENDING"
               },
               {
+                "name": "PENDING_PAYMENT",
+                "value": "PENDING_PAYMENT"
+              },
+              {
+                "name": "RX_PENDING",
+                "value": "RX_PENDING"
+              },
+              {
+                "name": "RX_REJECTED",
+                "value": "RX_REJECTED"
+              },
+              {
                 "name": "CONFIRMED",
                 "value": "CONFIRMED"
+              },
+              {
+                "name": "ACCEPTED",
+                "value": "ACCEPTED"
+              },
+              {
+                "name": "PACKED",
+                "value": "PACKED"
               },
               {
                 "name": "PACKING",
@@ -658,6 +694,13 @@
                   "kind": "scalar"
                 }
               },
+              "deliveryOtp": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -676,6 +719,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "otpVerifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
                   "kind": "scalar"
                 }
               },
@@ -854,6 +904,9 @@
                 "deliveryFee": {
                   "column": "deliveryFee"
                 },
+                "deliveryOtp": {
+                  "column": "deliveryOtp"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -862,6 +915,9 @@
                 },
                 "orderNumber": {
                   "column": "orderNumber"
+                },
+                "otpVerifiedAt": {
+                  "column": "otpVerifiedAt"
                 },
                 "paymentIntentId": {
                   "column": "paymentIntentId"
@@ -978,6 +1034,87 @@
               },
               "namespaceId": "__unbound__",
               "table": "OrderItem"
+            }
+          },
+          "OtpToken": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "key": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "otp": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "phone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "used": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "key": {
+                  "column": "key"
+                },
+                "otp": {
+                  "column": "otp"
+                },
+                "phone": {
+                  "column": "phone"
+                },
+                "used": {
+                  "column": "used"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "OtpToken"
             }
           },
           "Payment": {
@@ -1450,6 +1587,114 @@
               "table": "Prescription"
             }
           },
+          "PrescriptionLibrary": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "customerId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "doctorName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiryDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "imageUrl": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "prescriptionId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "customer": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "customerId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Customer",
+                  "namespace": "__unbound__"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "customerId": {
+                  "column": "customerId"
+                },
+                "doctorName": {
+                  "column": "doctorName"
+                },
+                "expiryDate": {
+                  "column": "expiryDate"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "imageUrl": {
+                  "column": "imageUrl"
+                },
+                "prescriptionId": {
+                  "column": "prescriptionId"
+                },
+                "status": {
+                  "column": "status"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "PrescriptionLibrary"
+            }
+          },
           "Rider": {
             "fields": {
               "currentLat": {
@@ -1581,6 +1826,77 @@
               },
               "namespaceId": "__unbound__",
               "table": "Rider"
+            }
+          },
+          "ServiceArea": {
+            "fields": {
+              "city": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "pincode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "region": {
+                "nullable": true,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "city": {
+                  "column": "city"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "pincode": {
+                  "column": "pincode"
+                },
+                "region": {
+                  "column": "region"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "ServiceArea"
             }
           },
           "TrackingEvent": {
@@ -1795,6 +2111,67 @@
               },
               "namespaceId": "__unbound__",
               "table": "User"
+            }
+          },
+          "WaitlistEntry": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/datetime@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "notified": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/integer@1",
+                  "kind": "scalar"
+                }
+              },
+              "phone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "pincode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "sqlite/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "notified": {
+                  "column": "notified"
+                },
+                "phone": {
+                  "column": "phone"
+                },
+                "pincode": {
+                  "column": "pincode"
+                }
+              },
+              "namespaceId": "__unbound__",
+              "table": "WaitlistEntry"
             }
           }
         }
@@ -2126,6 +2503,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "deliveryOtp": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
@@ -2140,6 +2522,11 @@
                   "codecId": "sqlite/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "otpVerifiedAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "paymentIntentId": {
                   "codecId": "sqlite/text@1",
@@ -2381,6 +2768,69 @@
                 ]
               },
               "uniques": []
+            },
+            "OtpToken": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "key": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "otp": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "phone": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "used": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "key"
+                  ]
+                },
+                {
+                  "columns": [
+                    "phone",
+                    "expiresAt"
+                  ]
+                }
+              ]
             },
             "Payment": {
               "columns": {
@@ -2707,6 +3157,88 @@
               },
               "uniques": []
             },
+            "PrescriptionLibrary": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "customerId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "doctorName": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "expiryDate": {
+                  "codecId": "sqlite/datetime@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "imageUrl": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "prescriptionId": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "customerId"
+                    ],
+                    "namespaceId": "__unbound__",
+                    "tableName": "PrescriptionLibrary"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "__unbound__",
+                    "tableName": "Customer"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "customerId"
+                  ],
+                  "name": "PrescriptionLibrary_customerId_idx_b2a8a46c",
+                  "prefix": "PrescriptionLibrary_customerId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "Rider": {
               "columns": {
                 "currentLat": {
@@ -2783,6 +3315,58 @@
                 {
                   "columns": [
                     "userId"
+                  ]
+                }
+              ]
+            },
+            "ServiceArea": {
+              "columns": {
+                "city": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "pincode": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "region": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "pincode"
                   ]
                 }
               ]
@@ -2925,6 +3509,54 @@
                   ]
                 }
               ]
+            },
+            "WaitlistEntry": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "sqlite/datetime@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "notified": {
+                  "codecId": "sqlite/integer@1",
+                  "nativeType": "integer",
+                  "nullable": false
+                },
+                "phone": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "pincode": {
+                  "codecId": "sqlite/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "pincode",
+                    "phone"
+                  ]
+                }
+              ]
             }
           },
           "valueSet": {
@@ -2932,7 +3564,12 @@
               "kind": "valueSet",
               "values": [
                 "PENDING",
+                "PENDING_PAYMENT",
+                "RX_PENDING",
+                "RX_REJECTED",
                 "CONFIRMED",
+                "ACCEPTED",
+                "PACKED",
                 "PACKING",
                 "READY_FOR_PICKUP",
                 "OUT_FOR_DELIVERY",
@@ -2980,7 +3617,7 @@
         "id": "__unbound__"
       }
     },
-    "storageHash": "89e01251e3a18a7ae2f014b91303bc97b87cbc9268db9ea1594a761242701a2a"
+    "storageHash": "5e803abb78a4c00c75cf53bb40ff2260cc95d63f7119503d92208f374e56880b"
   },
   "capabilities": {
     "sql": {
