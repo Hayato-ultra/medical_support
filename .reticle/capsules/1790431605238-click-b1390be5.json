@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "current route (no route change in the window) '/login', expected '/cart'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e20",
+        "source": {
+          "file": "src/components/ui/auth-form.tsx",
+          "line": 62,
+          "column": 8
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1790431605238-click-b1390be5",
+  "createdAt": 1790431605238,
+  "seen": 1,
+  "lastSeenAt": 1790431605238
+}

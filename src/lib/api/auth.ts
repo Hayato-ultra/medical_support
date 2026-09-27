@@ -1,7 +1,5 @@
-import { getServerSession } from 'next-auth'
+import { createClient } from '@/lib/supabase/server-client'
 import { NextResponse } from 'next/server'
-import { authOptions } from '@/lib/auth/config'
-import { db } from '@/lib/db/client'
 import type { UserRole } from '@/lib/auth/types'
 
 export interface Actor {
@@ -13,33 +11,47 @@ export interface Actor {
 }
 
 export async function getActor(): Promise<Actor | null> {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return null
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
 
-  const role = session.user.role
+  // Fetch user profile from users table
+  const { data: profile, error } = await supabase
+    .from('users')
+    .select('role, phone, customer_id')
+    .eq('id', user.id)
+    .single()
+
+  if (error || !profile) return null
+
   let customerId = ''
   let riderId = ''
 
-  if (role === 'CUSTOMER') {
-    const customer: any = await db.orm.Customer
-      .where({ userId: session.user.id })
-      .first()
-    customerId = customer?.id ?? session.user.id
+  if (profile.role === 'CUSTOMER') {
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+    if (customer) customerId = customer.id
   }
 
-  if (role === 'RIDER') {
-    const rider: any = await db.orm.Rider
-      .where({ userId: session.user.id })
-      .first()
-    riderId = rider?.id ?? ''
+  if (profile.role === 'RIDER') {
+    const { data: rider } = await supabase
+      .from('riders')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+    if (rider) riderId = rider.id
   }
 
   return {
-    userId: session.user.id,
-    customerId: customerId || session.user.customerId || session.user.id,
+    userId: user.id,
+    customerId,
     riderId,
-    role,
-    phone: session.user.phone || '',
+    role: profile.role as UserRole,
+    phone: profile.phone || '',
   }
 }
 
@@ -62,10 +74,13 @@ export function isStaff(actor: Actor) {
 /** Pharmacy a staff actor belongs to, or null for admins (unscoped). */
 export async function resolvePharmacyScope(actor: Actor): Promise<string | null> {
   if (actor.role === 'ADMIN') return null
-  const staff: any = await db.orm.PharmacyStaff
-    .where({ userId: actor.userId })
-    .first()
-  return staff?.pharmacyId ?? null
+  const supabase = await createClient()
+  const { data: staff } = await supabase
+    .from('pharmacy_staff')
+    .select('pharmacy_id')
+    .eq('user_id', actor.userId)
+    .single()
+  return staff?.pharmacy_id ?? null
 }
 
 export interface AuthorizedOrder {
@@ -78,8 +93,14 @@ export async function loadAuthorizedOrder(
   actor: Actor,
   orderId: string
 ): Promise<AuthorizedOrder> {
-  const order: any = await db.orm.Order.where({ id: orderId }).first()
-  if (!order) {
+  const supabase = await createClient()
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', orderId)
+    .single()
+
+  if (error || !order) {
     return {
       order: null,
       error: NextResponse.json({ error: 'Order not found' }, { status: 404 }),
@@ -87,28 +108,25 @@ export async function loadAuthorizedOrder(
   }
 
   if (actor.role === 'CUSTOMER') {
-    if (order.customerId !== actor.customerId) {
+    if (order.customer_id !== actor.customerId) {
       return { order: null, error: forbidden('This order belongs to another account') }
     }
     return { order, error: null }
   }
 
-        if (actor.role === 'RIDER') {
-          // An unassigned order is not the rider's to read: it still exposes the
-          // customer's address, items and notes. Claiming a delivery is a
-          // separate flow, not a side effect of holding a rider session.
-          if (!order.riderId) {
-            return { order: null, error: forbidden('This delivery is not assigned to you') }
-          }
-          if (order.riderId !== actor.riderId) {
-            return { order: null, error: forbidden('This delivery is assigned to another rider') }
-          }
-          return { order, error: null }
-        }
+  if (actor.role === 'RIDER') {
+    if (!order.rider_id) {
+      return { order: null, error: forbidden('This delivery is not assigned to you') }
+    }
+    if (order.rider_id !== actor.riderId) {
+      return { order: null, error: forbidden('This delivery is assigned to another rider') }
+    }
+    return { order, error: null }
+  }
 
   if (hasRole(actor, 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
     const pharmacyId = await resolvePharmacyScope(actor)
-    if (!pharmacyId || pharmacyId !== order.pharmacyId) {
+    if (!pharmacyId || pharmacyId !== order.pharmacy_id) {
       return { order: null, error: forbidden('This order belongs to a different pharmacy') }
     }
     return { order, error: null }

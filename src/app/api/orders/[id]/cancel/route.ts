@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, loadAuthorizedOrder } from '@/lib/api/auth'
 import { applyTransition } from '@/lib/api/order-lifecycle'
 
@@ -14,6 +14,7 @@ export async function POST(
   if (!actor) return unauthorized('Sign in to cancel an order')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { id } = await params
     const { reason } = await req.json().catch(() => ({}))
 
@@ -41,7 +42,11 @@ export async function POST(
     }
 
     const wasCharged = !FREE_CANCEL_UNTIL.includes(status)
-    const payment: any = await db.orm.Payment.where({ orderId: order.id }).first()
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('order_id', order.id)
+      .single()
     const actuallyCharged = !!payment && payment.status === 'COMPLETED'
 
     const result = await applyTransition(order, 'CANCELLED', {

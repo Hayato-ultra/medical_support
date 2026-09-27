@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/components/ui/theme-provider'
-import { signOut } from 'next-auth/react'
+import { createClient } from '@/lib/supabase/browser-client'
 import { cn } from '@/lib/utils'
 import {
   Package, Pill, Truck, Users, Store, Home, LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 
 const navItemsByRole: Record<string, Array<{ label: string; href: string; icon: any }>> = {
   CUSTOMER: [
@@ -48,6 +49,8 @@ export function Navigation() {
   const { theme, setTheme, resolvedTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+  const isAdminRoute = pathname?.startsWith('/admin')
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -61,6 +64,12 @@ export function Navigation() {
   ]
 
   const themeIcon = resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/home'
+  }
 
   if (isLoading) {
     return (
@@ -101,12 +110,12 @@ export function Navigation() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {isAuthenticated && (
+          {!isAdminRoute && isAuthenticated && (
             <>
               <Badge variant="outline" className="hidden sm:inline-flex">
                 {user?.role?.replace('_', ' ').toLowerCase()}
               </Badge>
-              <Button variant="ghost" size="sm" onClick={() => signOut()}>
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Sign out</span>
               </Button>
@@ -176,10 +185,10 @@ export function Navigation() {
                 {themeIcon}
               </Button>
             </div>
-            {isAuthenticated && (
+            {isAuthenticated && !isAdminRoute && (
               <>
                 <hr className="my-2" />
-                <Button variant="outline" className="w-full justify-start gap-3" onClick={() => signOut()}>
+                <Button variant="outline" className="w-full justify-start gap-3" onClick={handleSignOut}>
                   <LogOut className="h-5 w-5" />
                   <span>Sign out</span>
                 </Button>

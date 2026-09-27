@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'crypto'
-import { db } from '@/lib/db/client'
+import { createApiClient } from '@/lib/supabase/api-client'
 
 /**
  * Allowed order state machine.
@@ -63,11 +63,7 @@ export const TRANSITION_ROLES: Record<string, string[]> = {
   CANCELLED: ['CUSTOMER', 'ADMIN', 'PHARMACY_OWNER', 'PHARMACY_STAFF'],
 }
 
-/**
- * Statuses that may only be reached once the money has actually been captured.
- * Without this an unpaid prescription order could be confirmed, packed and
- * dispatched, because the pharmacy never waits on the payment webhook.
- */
+/** Statuses that may only be reached once the money has actually been captured. */
 const REQUIRES_CAPTURED_PAYMENT = new Set([
   'CONFIRMED',
   'ACCEPTED',
@@ -82,17 +78,23 @@ export function canTransition(current: string, next: string) {
   return (ALLOWED_TRANSITIONS[current] || []).includes(next)
 }
 
-export function addTrackingEvent(
+async function getSupabase() {
+  const { createApiClient } = await import('@/lib/supabase/api-client')
+  return await createApiClient()
+}
+
+export async function addTrackingEvent(
   orderId: string,
   status: string,
   notes?: string | null,
   location?: unknown
 ) {
-  return db.orm.TrackingEvent.create({
+  const supabase = await getSupabase()
+  return supabase.from('tracking_events').insert({
     id: randomUUID(),
-    orderId,
+    order_id: orderId,
     status,
-    timestamp: new Date(),
+    timestamp: new Date().toISOString(),
     notes: notes || FRIENDLY_MESSAGES[status] || null,
     location: location ?? null,
   })
@@ -100,18 +102,30 @@ export function addTrackingEvent(
 
 /** Returns reserved stock to the pharmacy shelf when an order is abandoned. */
 export async function releaseStock(orderId: string) {
-  const items: any[] = await db.orm.OrderItem.where({ orderId }).all()
-  const order: any = await db.orm.Order.where({ id: orderId }).first()
+  const supabase = await getSupabase()
+  const { data: items } = await supabase
+    .from('order_items')
+    .select('*')
+    .eq('order_id', orderId)
+  const { data: order } = await supabase
+    .from('orders')
+    .select('pharmacy_id')
+    .eq('id', orderId)
+    .single()
   if (!order) return
 
-  for (const item of items) {
-    const stock: any = await db.orm.Inventory
-      .where({ pharmacyId: order.pharmacyId, medicineId: item.medicineId })
-      .first()
+  for (const item of items || []) {
+    const { data: stock } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('pharmacy_id', order.pharmacy_id)
+      .eq('medicine_id', item.medicine_id)
+      .single()
     if (!stock) continue
-    await db.orm.Inventory
-      .where({ id: stock.id })
+    await supabase
+      .from('inventory')
       .update({ quantity: stock.quantity + item.quantity })
+      .eq('id', stock.id)
   }
 }
 
@@ -119,58 +133,70 @@ export async function setPaymentStatus(
   orderId: string,
   status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED'
 ) {
-  const payment: any = await db.orm.Payment.where({ orderId }).first()
+  const supabase = await getSupabase()
+  const { data: payment } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('order_id', orderId)
+    .single()
   if (!payment) return null
-  return db.orm.Payment.where({ id: payment.id }).update({ status })
+  return supabase
+    .from('payments')
+    .update({ status })
+    .eq('id', payment.id)
 }
 
 export function generateDeliveryOtp() {
   return String(randomInt(100000, 999999))
 }
 
-/**
- * Hands a packed order to an idle rider.
- *
- * Without this the rider dashboard stays permanently empty and delivery can
- * never be confirmed, because every rider-facing route requires the order to
- * already name them. Packing is the moment the parcel is ready to collect, so
- * that is where the rider is picked up and flagged as busy.
- *
- * "Available" is not the same as "idle": a rider freed from their last
- * delivery is available again, so a rider still holding an unfinished order is
- * skipped and the next free rider is used instead.
- *
- * Returns the assigned rider id, or null when nobody is free.
- */
+/** Hands a packed order to an idle rider. */
 export async function assignRider(order: any): Promise<string | null> {
-  if (order.riderId) return String(order.riderId)
+  const supabase = await getSupabase()
+  if (order.rider_id) return String(order.rider_id)
 
   const busyIds = new Set<string>()
   for (const status of ACTIVE_DELIVERY_STATUSES) {
-    const active: any[] = await db.orm.Order.where({ status }).all()
-    for (const o of active) {
-      if (o.riderId) busyIds.add(String(o.riderId))
+    const { data: active } = await supabase
+      .from('orders')
+      .select('rider_id')
+      .eq('status', status)
+    for (const o of active || []) {
+      if (o.rider_id) busyIds.add(String(o.rider_id))
     }
   }
 
-  const riders: any[] = await db.orm.Rider.where({ isAvailable: 1 }).all()
-  const rider = riders.find((r) => !busyIds.has(String(r.id)))
+  const { data: riders } = await supabase
+    .from('riders')
+    .select('*')
+    .eq('is_available', true)
+  const rider = (riders || []).find((r) => !busyIds.has(String(r.id)))
   if (!rider) return null
 
-  await db.orm.Rider.where({ id: rider.id }).update({ isAvailable: 0 })
-  await db.orm.Order.where({ id: order.id }).update({ riderId: rider.id })
+  await supabase
+    .from('riders')
+    .update({ is_available: false })
+    .eq('id', rider.id)
+  await supabase
+    .from('orders')
+    .update({ rider_id: rider.id })
+    .eq('id', order.id)
   await addTrackingEvent(
     order.id,
     'RIDER_ASSIGNED',
-    `${rider.name} (${String(rider.vehicleType).toLowerCase()}) is collecting this order`
+    `${rider.name} (${String(rider.vehicle_type).toLowerCase()}) is collecting this order`
   )
   return String(rider.id)
 }
 
 /** Frees the rider again once the order no longer needs them. */
 async function releaseRider(order: any) {
-  if (!order.riderId) return
-  await db.orm.Rider.where({ id: order.riderId }).update({ isAvailable: 1 })
+  const supabase = await getSupabase()
+  if (!order.rider_id) return
+  await supabase
+    .from('riders')
+    .update({ is_available: true })
+    .eq('id', order.rider_id)
 }
 
 /** Full transition: validates, updates, logs, and handles side effects. */
@@ -205,7 +231,12 @@ export async function applyTransition(
     }
   }
 
-  const payment: any = await db.orm.Payment.where({ orderId: order.id }).first()
+  const supabase = await getSupabase()
+  const { data: payment } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('order_id', order.id)
+    .single()
 
   // Don't let work start on an order whose payment never captured. Orders with
   // no payment row at all predate the payment flow and are left alone.
@@ -220,15 +251,22 @@ export async function applyTransition(
 
   const data: any = { status: next }
 
-  if (next === 'OUT_FOR_DELIVERY' && !order.deliveryOtp) {
-    data.deliveryOtp = generateDeliveryOtp()
+  if (next === 'OUT_FOR_DELIVERY' && !order.delivery_otp) {
+    data.delivery_otp = generateDeliveryOtp()
   }
 
   if (next === 'DELIVERED') {
-    data.otpVerifiedAt = new Date()
+    data.otp_verified_at = new Date().toISOString()
   }
 
-  const updated = await db.orm.Order.where({ id: order.id }).update(data)
+  const { data: updated, error } = await supabase
+    .from('orders')
+    .update(data)
+    .eq('id', order.id)
+    .select()
+    .single()
+
+  if (error) return { error: { message: error.message } }
 
   await addTrackingEvent(order.id, next, opts.notes, opts.location)
 
@@ -252,6 +290,6 @@ export async function applyTransition(
   return {
     error: null,
     order: updated,
-    deliveryOtp: data.deliveryOtp ?? order.deliveryOtp ?? null,
+    deliveryOtp: data.delivery_otp ?? order.delivery_otp ?? null,
   }
 }

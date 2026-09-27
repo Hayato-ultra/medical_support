@@ -1,0 +1,101 @@
+{
+  "version": 2,
+  "name": "drive-admin-login-s9ade56d",
+  "projectId": "temp-next-bb4a477e",
+  "createdAt": 1790437132844,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "component",
+        "component": "AuthForm",
+        "source": {
+          "file": "src/components/ui/auth-form.tsx",
+          "line": 39,
+          "column": 10
+        }
+      },
+      "args": {
+        "value": "admin@medical.com"
+      },
+      "action": "fill"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "component",
+        "component": "AuthForm",
+        "source": {
+          "file": "src/components/ui/auth-form.tsx",
+          "line": 52,
+          "column": 10
+        }
+      },
+      "args": {
+        "value": "admin123"
+      },
+      "action": "fill"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign In"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/admin"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "component",
+        "component": "AuthForm",
+        "source": {
+          "file": "src/components/ui/auth-form.tsx",
+          "line": 39,
+          "column": 10
+        }
+      },
+      "args": {
+        "value": "admin@medical.com"
+      },
+      "action": "fill"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "component",
+        "component": "AuthForm",
+        "source": {
+          "file": "src/components/ui/auth-form.tsx",
+          "line": 52,
+          "column": 10
+        }
+      },
+      "args": {
+        "value": "admin123"
+      },
+      "action": "fill"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign In"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/admin"
+      }
+    }
+  ],
+  "startPath": "/login"
+}

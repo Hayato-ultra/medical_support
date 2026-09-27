@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { LayoutDashboard, Package, Pill, Store, Truck, Users, Box, CreditCard, RotateCcw, BarChart, Settings, AlertTriangle, Loader2 } from 'lucide-react'
 
 const navMain = [
@@ -45,6 +46,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-amber-600" />
           <h1 className="text-2xl font-bold">Admin access required</h1>
           <p className="mt-2 text-muted-foreground">Sign in as an administrator to view this page.</p>
+          <div className="mt-6 flex justify-center gap-4">
+            <Link href="/login">
+              <Button>Sign In</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="outline">Sign Up</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )

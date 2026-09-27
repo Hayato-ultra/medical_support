@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "drive-login-cart-s9ade56d",
+  "projectId": "temp-next-bb4a477e",
+  "createdAt": 1790435536846,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "link",
+        "name": "Sign in"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/login"
+      }
+    }
+  ],
+  "startPath": "/cart"
+}

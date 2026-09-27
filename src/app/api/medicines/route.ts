@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 
 function normalize(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -80,44 +80,63 @@ function extractSalt(name: string): string | null {
 
 export async function GET(req: Request) {
   try {
+    const supabase = createReadOnlyApiClient()
     const { searchParams } = new URL(req.url)
     const query = searchParams.get('query')?.trim() || ''
     const category = searchParams.get('category') || ''
     const requiresPrescription = searchParams.get('requiresPrescription')
     const pincode = searchParams.get('pincode') || ''
 
-    const medicines = (await db.orm.Medicine.where({}).all()) as any[]
-    const inventory = (await db.orm.Inventory.where({}).all()) as any[]
+    const { data: medicines, error: medError } = await supabase
+      .from('medicines')
+      .select('*')
 
-    const pharmacies = pincode
-      ? ((await db.orm.Pharmacy.where({ pincode }).all()) as any[])
-      : ((await db.orm.Pharmacy.where({}).all()) as any[])
-    const pharmacyIds = new Set(pharmacies.map((p) => p.id))
+    if (medError) throw medError
+
+    const { data: inventory, error: invError } = await supabase
+      .from('inventory')
+      .select('*')
+
+    if (invError) throw invError
+
+    let pharmacyIds: Set<string> = new Set()
+    if (pincode) {
+      const { data: pharmacies } = await supabase
+        .from('pharmacies')
+        .select('id')
+        .eq('pincode', pincode)
+      pharmacyIds = new Set(pharmacies?.map((p) => p.id) || [])
+    } else {
+      const { data: pharmacies } = await supabase
+        .from('pharmacies')
+        .select('id')
+      pharmacyIds = new Set(pharmacies?.map((p) => p.id) || [])
+    }
 
     const stockByMedicine = new Map<string, { total: number; minPrice: number }>()
-    for (const row of inventory) {
-      if (pharmacyIds.size && !pharmacyIds.has(row.pharmacyId)) continue
-      const entry = stockByMedicine.get(row.medicineId) || {
+    for (const row of inventory || []) {
+      if (pharmacyIds.size && !pharmacyIds.has(row.pharmacy_id)) continue
+      const entry = stockByMedicine.get(row.medicine_id) || {
         total: 0,
         minPrice: Number.MAX_SAFE_INTEGER,
       }
       entry.total += row.quantity
       entry.minPrice = Math.min(entry.minPrice, Number(row.price))
-      stockByMedicine.set(row.medicineId, entry)
+      stockByMedicine.set(row.medicine_id, entry)
     }
 
-    let enriched = medicines.map((m) => {
+    let enriched = (medicines || []).map((m) => {
       const stock = stockByMedicine.get(m.id)
       return {
         id: m.id,
         name: m.name,
         manufacturer: m.manufacturer,
-        dosageForm: m.dosageForm,
+        dosageForm: m.dosage_form,
         strength: m.strength,
-        requiresPrescription: !!m.requiresPrescription,
+        requiresPrescription: !!m.requires_prescription,
         category: m.category,
         description: m.description || '',
-        imageUrl: m.imageUrl || null,
+        imageUrl: m.image_url || null,
         price: stock && stock.minPrice !== Number.MAX_SAFE_INTEGER
           ? Math.round(stock.minPrice * 100) / 100
           : null,
@@ -189,6 +208,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const supabase = createReadOnlyApiClient()
     const body = await req.json()
 
     if (!body.name || !body.manufacturer || !body.category) {
@@ -198,17 +218,23 @@ export async function POST(req: Request) {
       )
     }
 
-    const medicine = await db.orm.Medicine.create({
-      id: randomUUID(),
-      name: body.name,
-      manufacturer: body.manufacturer,
-      dosageForm: body.dosageForm || 'Tablet',
-      strength: body.strength || '',
-      requiresPrescription: body.requiresPrescription ? 1 : 0,
-      category: body.category,
-      description: body.description || null,
-      imageUrl: body.imageUrl || null,
-    } as any)
+    const { data: medicine, error } = await supabase
+      .from('medicines')
+      .insert({
+        id: randomUUID(),
+        name: body.name,
+        manufacturer: body.manufacturer,
+        dosage_form: body.dosageForm || 'Tablet',
+        strength: body.strength || '',
+        requires_prescription: body.requiresPrescription ? true : false,
+        category: body.category,
+        description: body.description || null,
+        image_url: body.imageUrl || null,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json({ medicine }, { status: 201 })
   } catch (error) {

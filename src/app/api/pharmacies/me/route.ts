@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import {
   getActor,
   unauthorized,
@@ -22,20 +22,25 @@ export async function GET() {
     return forbidden('Only pharmacy accounts can view this')
   }
 
+  const supabase = createReadOnlyApiClient()
   const pharmacyId = await resolvePharmacyScope(actor)
   if (!pharmacyId) return forbidden('No pharmacy is linked to this account')
 
-  const pharmacy: any = await db.orm.Pharmacy.where({ id: pharmacyId }).first()
-  if (!pharmacy) return NextResponse.json({ error: 'Pharmacy not found' }, { status: 404 })
+  const { data: pharmacy, error } = await supabase
+    .from('pharmacies')
+    .select('*')
+    .eq('id', pharmacyId)
+    .single()
+  if (error || !pharmacy) return NextResponse.json({ error: 'Pharmacy not found' }, { status: 404 })
 
   return NextResponse.json({
     pharmacy: {
       id: pharmacy.id,
       name: pharmacy.name,
-      licenseNumber: pharmacy.licenseNumber,
-      licenseExpiry: pharmacy.licenseExpiry ?? null,
-      rxPaused: !!pharmacy.rxPaused,
-      isActive: !!pharmacy.isActive,
+      licenseNumber: pharmacy.license_number,
+      licenseExpiry: pharmacy.license_expiry ?? null,
+      rxPaused: !!pharmacy.rx_paused,
+      isActive: !!pharmacy.is_active,
     },
   })
 }
@@ -52,6 +57,7 @@ export async function PATCH(req: Request) {
     return forbidden('Only pharmacy accounts can change this')
   }
 
+  const supabase = createReadOnlyApiClient()
   const pharmacyId = await resolvePharmacyScope(actor)
   if (!pharmacyId) return forbidden('No pharmacy is linked to this account')
 
@@ -63,27 +69,29 @@ export async function PATCH(req: Request) {
   }
 
   const patch: Record<string, unknown> = {}
-  if (data.rxPaused !== undefined) patch.rxPaused = data.rxPaused ? 1 : 0
-  if (data.licenseExpiry !== undefined) patch.licenseExpiry = data.licenseExpiry
+  if (data.rxPaused !== undefined) patch.rx_paused = data.rxPaused
+  if (data.licenseExpiry !== undefined) patch.license_expiry = data.licenseExpiry
 
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
-  const pharmacy: any = await db.orm.Pharmacy.where({ id: pharmacyId }).first()
-  if (!pharmacy) return NextResponse.json({ error: 'Pharmacy not found' }, { status: 404 })
+  const { data: pharmacy, error } = await supabase
+    .from('pharmacies')
+    .update(patch)
+    .eq('id', pharmacyId)
+    .select()
+    .single()
+  if (error) return NextResponse.json({ error: 'Pharmacy not found' }, { status: 404 })
 
-  await db.orm.Pharmacy.where({ id: pharmacyId }).update(patch)
-
-  const updated: any = await db.orm.Pharmacy.where({ id: pharmacyId }).first()
   return NextResponse.json({
     pharmacy: {
-      id: updated.id,
-      name: updated.name,
-      licenseNumber: updated.licenseNumber,
-      licenseExpiry: updated.licenseExpiry ?? null,
-      rxPaused: !!updated.rxPaused,
-      isActive: !!updated.isActive,
+      id: pharmacy.id,
+      name: pharmacy.name,
+      licenseNumber: pharmacy.license_number,
+      licenseExpiry: pharmacy.license_expiry ?? null,
+      rxPaused: !!pharmacy.rx_paused,
+      isActive: !!pharmacy.is_active,
     },
   })
 }

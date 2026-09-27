@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 
 /** Public list of pharmacies currently accepting orders. */
 export async function GET() {
   try {
-    const pharmacies: any[] = await db.orm.Pharmacy.where({ isActive: 1 }).all()
+    const supabase = createReadOnlyApiClient()
+
+    const { data: pharmacies, error } = await supabase
+      .from('pharmacies')
+      .select('*')
+      .eq('is_active', true)
+
+    if (error) throw error
 
     const withCounts = await Promise.all(
-      pharmacies.map(async (pharmacy) => {
-        const inventory: any[] = await db.orm.Inventory
-          .where({ pharmacyId: pharmacy.id })
-          .all()
-        const inStock = inventory.filter((i) => i.quantity > 0).length
+      (pharmacies || []).map(async (pharmacy) => {
+        const { data: inventory } = await supabase
+          .from('inventory')
+          .select('quantity')
+          .eq('pharmacy_id', pharmacy.id)
+        const inStock = (inventory || []).filter((i) => i.quantity > 0).length
         return {
           id: pharmacy.id,
           name: pharmacy.name,
@@ -19,7 +27,7 @@ export async function GET() {
           pincode: pharmacy.pincode,
           latitude: pharmacy.latitude,
           longitude: pharmacy.longitude,
-          operatingHours: pharmacy.operatingHours ?? null,
+          operatingHours: pharmacy.operating_hours ?? null,
           medicinesInStock: inStock,
         }
       })

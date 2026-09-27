@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { z } from 'zod'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, forbidden, resolvePharmacyScope, hasRole } from '@/lib/api/auth'
 
 const OrderCreateSchema = z.object({
@@ -37,14 +37,17 @@ export async function POST(req: Request) {
   }
 
   try {
+    const supabase = createReadOnlyApiClient()
     const body = await req.json()
     const data = OrderCreateSchema.parse(body)
 
-    // The checkout screen checks this too, but the client is not a boundary:
-    // an order outside our delivery areas must never reach the database.
-    const area: any = await db.orm.ServiceArea
-      .where({ pincode: data.deliveryAddress.pincode, isActive: 1 })
-      .first()
+    // Check service area
+    const { data: area } = await supabase
+      .from('service_areas')
+      .select('*')
+      .eq('pincode', data.deliveryAddress.pincode)
+      .eq('is_active', true)
+      .single()
     if (!area) {
       return NextResponse.json(
         {
@@ -55,14 +58,15 @@ export async function POST(req: Request) {
       )
     }
 
-    // Resolve the medicines before choosing a pharmacy, because whether the
-    // order needs a prescription decides which pharmacies are eligible at all.
+    // Resolve medicines
     const medicines: any[] = []
     for (const item of data.items) {
-      const medicine: any = await db.orm.Medicine
-        .where({ id: item.medicineId })
-        .first()
-      if (!medicine) {
+      const { data: medicine, error } = await supabase
+        .from('medicines')
+        .select('*')
+        .eq('id', item.medicineId)
+        .single()
+      if (error || !medicine) {
         return NextResponse.json(
           { error: 'Medicine not found', medicineId: item.medicineId },
           { status: 404 }
@@ -70,34 +74,36 @@ export async function POST(req: Request) {
       }
       medicines.push(medicine)
     }
-    const needsRx = medicines.some((m) => !!m.requiresPrescription)
+    const needsRx = medicines.some((m) => !!m.requires_prescription)
 
-    // A pharmacy with an expired or missing licence may not take any order, and
-    // one paused for prescriptions may still sell over the counter but not
-    // dispense against a prescription.
-    const now = Date.now()
-    const licenceValid = (p: any) =>
-      !p.licenseExpiry || new Date(p.licenseExpiry).getTime() > now
-    const eligible = (p: any) =>
-      !!p.isActive && licenceValid(p) && (!needsRx || !p.rxPaused)
+    // Get active pharmacies
+    const { data: activePharmacies } = await supabase
+      .from('pharmacies')
+      .select('*')
+      .eq('is_active', true)
 
-    const active: any[] = await db.orm.Pharmacy.where({ isActive: 1 }).all()
-    const stockByPharmacy = new Map<string, any[]>()
-    for (const p of active) {
-      stockByPharmacy.set(
-        p.id,
-        await db.orm.Inventory.where({ pharmacyId: p.id }).all()
+    if (!activePharmacies || activePharmacies.length === 0) {
+      return NextResponse.json(
+        { error: 'NO_ELIGIBLE_PHARMACY', message: 'No pharmacy is currently accepting orders.' },
+        { status: 503 }
       )
+    }
+
+    // Check stock for each pharmacy
+    const stockByPharmacy = new Map<string, any[]>()
+    for (const p of activePharmacies) {
+      const { data: inventory } = await supabase
+        .from('inventory')
+        .select('*')
+        .eq('pharmacy_id', p.id)
+      stockByPharmacy.set(p.id, inventory || [])
     }
 
     const stockFor = (p: any, item: { medicineId: string }) =>
       (stockByPharmacy.get(p.id) ?? []).find(
-        (r: any) => r.medicineId === item.medicineId
+        (r: any) => r.medicine_id === item.medicineId
       )
 
-    // Prefer a pharmacy that can fill the whole basket, then the one with the
-    // most spare stock, then name order so the choice is stable. Previously this
-    // took the first active row, so one out-of-stock store rejected every order.
     const canCover = (p: any) =>
       data.items.every((item) => {
         const row = stockFor(p, item)
@@ -109,7 +115,13 @@ export async function POST(req: Request) {
         0
       )
 
-    const ranked = active
+    const now = Date.now()
+    const licenceValid = (p: any) =>
+      !p.license_expiry || new Date(p.license_expiry).getTime() > now
+    const eligible = (p: any) =>
+      !!p.is_active && licenceValid(p) && (!needsRx || !p.rx_paused)
+
+    const ranked = activePharmacies
       .filter(eligible)
       .sort((a, b) => {
         const cover = Number(canCover(b)) - Number(canCover(a))
@@ -118,14 +130,12 @@ export async function POST(req: Request) {
         return slack !== 0 ? slack : String(a.name).localeCompare(String(b.name))
       })
 
-    // A client-supplied pharmacy is a preference, not authority: it is honoured
-    // only when it survives the same eligibility and stock checks.
     let pharmacy: any =
       (data.pharmacyId && ranked.find((p) => p.id === data.pharmacyId)) ||
       ranked[0] ||
       null
     if (!pharmacy) {
-      const pausedOnly = active.length > 0
+      const pausedOnly = activePharmacies.length > 0
       return NextResponse.json(
         {
           error: 'NO_ELIGIBLE_PHARMACY',
@@ -179,33 +189,33 @@ export async function POST(req: Request) {
         medicineId: medicine.id,
         quantity: item.quantity,
         price: Number(stock.price),
-        requiresPrescription: !!medicine.requiresPrescription,
+        requiresPrescription: !!medicine.requires_prescription,
         name: medicine.name,
       })
     }
 
-    if (needsRx && !data.prescriptionId) {      return NextResponse.json(
+    if (needsRx && !data.prescriptionId) {
+      return NextResponse.json(
         {
           error: 'PRESCRIPTION_REQUIRED',
-          message:
-            'Some medicines in your cart need a prescription. Upload one to continue.',
+          message: 'Some medicines in your cart need a prescription. Upload one to continue.',
         },
         { status: 400 }
       )
     }
 
     if (data.prescriptionId) {
-      const prescription: any = await db.orm.Prescription
-        .where({ id: data.prescriptionId })
-        .first()
+      const { data: prescription } = await supabase
+        .from('prescriptions')
+        .select('*')
+        .eq('id', data.prescriptionId)
+        .single()
       if (!prescription) {
         return NextResponse.json({ error: 'Prescription not found' }, { status: 400 })
       }
-      if (prescription.customerId !== actor.customerId) {
+      if (prescription.customer_id !== actor.customerId) {
         return forbidden('That prescription belongs to another account')
       }
-      // A rejected or already-used prescription must not be attachable to a new
-      // order, otherwise the pharmacist queue is fed work that can never clear.
       if (prescription.status !== 'PENDING' && prescription.status !== 'VERIFIED') {
         return NextResponse.json(
           {
@@ -215,17 +225,18 @@ export async function POST(req: Request) {
           { status: 409 }
         )
       }
-      const alreadyUsed: any[] = await db.orm.Order
-        .where({ prescriptionId: data.prescriptionId })
-        .all()
-      const inFlight = alreadyUsed.find((o) =>
+      const { data: inFlightOrders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('prescription_id', data.prescriptionId)
+      const inFlight = inFlightOrders?.find((o) =>
         !['DELIVERED', 'CANCELLED', 'RX_REJECTED'].includes(String(o.status))
       )
       if (inFlight) {
         return NextResponse.json(
           {
             error: 'PRESCRIPTION_IN_USE',
-            message: `This prescription is already attached to order ${inFlight.orderNumber}.`,
+            message: `This prescription is already attached to order ${inFlight.order_number}.`,
           },
           { status: 409 }
         )
@@ -241,78 +252,127 @@ export async function POST(req: Request) {
       .slice(0, 3)
       .toUpperCase()}`
 
-    // Every order starts unpaid. The payment webhook is what promotes it to
-    // RX_PENDING (prescription queue) or CONFIRMED, so the pharmacy never sees
-    // work that nobody has paid for.
     const initialStatus = 'PENDING_PAYMENT'
     const initialNote = 'Order created. Complete payment to confirm.'
 
-    const order: any = await db.orm.Order.create({
-      id: randomUUID(),
-      orderNumber,
-      customerId: actor.customerId,
-      pharmacyId: pharmacy.id,
-      prescriptionId: data.prescriptionId || null,
-      status: initialStatus,
-      totalAmount: String(totalAmount),
-      deliveryFee: String(deliveryFee),
-      paymentIntentId: null,
-      deliveryAddress: data.deliveryAddress,
-      notes: data.notes || null,
-      deliveryOtp: null,
-      otpVerifiedAt: null,
-    } as any)
-
-    // The ORM has no nested relation writes, so the lines go in one by one.
-    for (const line of lines) {
-      await db.orm.OrderItem.create({
-        id: randomUUID(),
-        orderId: order.id,
-        medicineId: line.medicineId,
-        quantity: line.quantity,
-        price: String(line.price),
-      } as any)
+    // Final FK validation
+    const { data: customerExists } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('id', actor.customerId)
+      .single()
+    if (!customerExists) {
+      return NextResponse.json({ error: 'Customer record not found. Please sign in again.' }, { status: 401 })
+    }
+    const { data: pharmacyExists } = await supabase
+      .from('pharmacies')
+      .select('id')
+      .eq('id', pharmacy.id)
+      .single()
+    if (!pharmacyExists) {
+      return NextResponse.json({ error: 'Pharmacy no longer available' }, { status: 409 })
+    }
+    if (data.prescriptionId) {
+      const { data: rxExists } = await supabase
+        .from('prescriptions')
+        .select('id')
+        .eq('id', data.prescriptionId)
+        .eq('customer_id', actor.customerId)
+        .single()
+      if (!rxExists) {
+        return NextResponse.json({ error: 'Prescription not found or access denied' }, { status: 400 })
+      }
     }
 
-    await db.orm.Payment.create({
-      id: randomUUID(),
-      orderId: order.id,
-      amount: String(totalAmount),
-      currency: 'INR',
-      status: 'PENDING',
-      paymentMethod: null,
-      transactionId: null,
-    } as any)
+    // Create order
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        id: randomUUID(),
+        order_number: orderNumber,
+        customer_id: actor.customerId,
+        pharmacy_id: pharmacy.id,
+        prescription_id: data.prescriptionId || null,
+        status: initialStatus,
+        total_amount: String(totalAmount),
+        delivery_fee: String(deliveryFee),
+        payment_intent_id: null,
+        delivery_address: data.deliveryAddress,
+        notes: data.notes || null,
+        delivery_otp: null,
+        otp_verified_at: null,
+      })
+      .select()
+      .single()
 
-    await db.orm.TrackingEvent.create({
-      id: randomUUID(),
-      orderId: order.id,
-      status: initialStatus,
-      timestamp: new Date(),
-      notes: initialNote,
-    } as any)
+    if (orderError) throw orderError
 
+    // Create order items
+    for (const line of lines) {
+      const { error: itemError } = await supabase
+        .from('order_items')
+        .insert({
+          id: randomUUID(),
+          order_id: order.id,
+          medicine_id: line.medicineId,
+          quantity: line.quantity,
+          price: String(line.price),
+        })
+      if (itemError) throw itemError
+    }
+
+    // Create payment record
+    const { error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        id: randomUUID(),
+        order_id: order.id,
+        amount: String(totalAmount),
+        currency: 'INR',
+        status: 'PENDING',
+        payment_method: null,
+        transaction_id: null,
+      })
+    if (paymentError) throw paymentError
+
+    // Create tracking event
+    const { error: trackingError } = await supabase
+      .from('tracking_events')
+      .insert({
+        id: randomUUID(),
+        order_id: order.id,
+        status: initialStatus,
+        timestamp: new Date().toISOString(),
+        notes: initialNote,
+      })
+    if (trackingError) throw trackingError
+
+    // Update inventory
     for (const line of lines) {
       const stock: any = inventoryRows.find(
-        (r) => r.medicineId === line.medicineId
+        (r) => r.medicine_id === line.medicineId
       )
-      await db.orm.Inventory
-        .where({ id: stock.id })
-        .update({ quantity: stock.quantity - line.quantity })
+      if (stock) {
+        const { error: invError } = await supabase
+          .from('inventory')
+          .update({ quantity: stock.quantity - line.quantity })
+          .eq('id', stock.id)
+        if (invError) throw invError
+      }
     }
 
     return NextResponse.json(
       {
         order: {
           id: order.id,
-          orderNumber: order.orderNumber,
+          orderNumber: order.order_number,
           status: order.status,
           totalAmount: String(totalAmount),
           deliveryFee: String(deliveryFee),
           pharmacyId: pharmacy.id,
           pharmacyName: pharmacy.name,
         },
-        orderNumber: order.orderNumber,
+        orderNumber: order.order_number,
         subtotal,
         deliveryFee,
         total: totalAmount,
@@ -341,57 +401,65 @@ export async function GET(req: Request) {
   if (!actor) return unauthorized('Sign in to view orders')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status') || undefined
 
-    const where: any = {}
+    let query = supabase.from('orders').select('*')
 
     if (actor.role === 'CUSTOMER') {
-      where.customerId = actor.customerId
+      query = query.eq('customer_id', actor.customerId)
     } else if (actor.role === 'RIDER') {
       if (!actor.riderId) {
         return NextResponse.json({ orders: [], count: 0 })
       }
-      where.riderId = actor.riderId
+      query = query.eq('rider_id', actor.riderId)
     } else if (hasRole(actor, 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
       const pharmacyId = await resolvePharmacyScope(actor)
       if (!pharmacyId) {
         return NextResponse.json({ orders: [], count: 0 })
       }
-      where.pharmacyId = pharmacyId
+      query = query.eq('pharmacy_id', pharmacyId)
     }
 
-    if (status) where.status = status
+    if (status) query = query.eq('status', status)
 
-    const orders: any[] = await db.orm.Order.where(where).all()
+    const { data: orders, error } = await query
+    if (error) throw error
 
     const withExtras = await Promise.all(
-      orders.map(async (order) => {
-        const events: any[] = await db.orm.TrackingEvent
-          .where({ orderId: order.id })
-          .all()
-        const payment: any = await db.orm.Payment
-          .where({ orderId: order.id })
-          .first()
-        const pharmacy: any = await db.orm.Pharmacy
-          .where({ id: order.pharmacyId })
-          .first()
-        const items: any[] = await db.orm.OrderItem
-          .where({ orderId: order.id })
-          .all()
+      (orders || []).map(async (order) => {
+        const { data: events } = await supabase
+          .from('tracking_events')
+          .select('*')
+          .eq('order_id', order.id)
+        const { data: payment } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('order_id', order.id)
+          .single()
+        const { data: pharmacy } = await supabase
+          .from('pharmacies')
+          .select('name')
+          .eq('id', order.pharmacy_id)
+          .single()
+        const { data: items } = await supabase
+          .from('order_items')
+          .select('*')
+          .eq('order_id', order.id)
 
         return {
           ...order,
           pharmacyName: pharmacy?.name ?? null,
-          totalAmount: String(order.totalAmount),
-          deliveryFee: String(order.deliveryFee),
+          totalAmount: String(order.total_amount),
+          deliveryFee: String(order.delivery_fee),
           paymentStatus: payment?.status ?? null,
-          items: items.map((i) => ({
-            medicineId: i.medicineId,
+          items: (items || []).map((i) => ({
+            medicineId: i.medicine_id,
             quantity: i.quantity,
             price: String(i.price),
           })),
-          timeline: events
+          timeline: (events || [])
             .map((e) => ({
               status: e.status,
               notes: e.notes,
@@ -407,7 +475,7 @@ export async function GET(req: Request) {
 
     withExtras.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
 
     return NextResponse.json({ orders: withExtras, count: withExtras.length })

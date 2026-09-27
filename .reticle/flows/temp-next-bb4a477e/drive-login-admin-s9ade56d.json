@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "drive-login-admin-s9ade56d",
+  "projectId": "temp-next-bb4a477e",
+  "createdAt": 1790437132842,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign In"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/login"
+      }
+    }
+  ],
+  "startPath": "/admin"
+}

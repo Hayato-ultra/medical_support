@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import {
   getActor,
   unauthorized,
@@ -29,6 +29,7 @@ export async function GET(
   const actor = await getActor()
   if (!actor) return unauthorized('Sign in to view prescriptions')
 
+  const supabase = createReadOnlyApiClient()
   const { file } = await params
   // Reject any path traversal attempt.
   const safeName = path.basename(file)
@@ -40,9 +41,11 @@ export async function GET(
 
   try {
     // Find the prescription this file belongs to.
-    const prescriptions: any[] = await db.orm.Prescription.where({}).all()
-    const linked = prescriptions.find((p) =>
-      typeof p.imageUrl === 'string' && p.imageUrl.endsWith(safeName)
+    const { data: prescriptions } = await supabase
+      .from('prescriptions')
+      .select('*')
+    const linked = (prescriptions || []).find((p) =>
+      typeof p.image_url === 'string' && p.image_url.endsWith(safeName)
     )
 
     if (!linked) {
@@ -50,14 +53,17 @@ export async function GET(
     }
 
     if (actor.role === 'CUSTOMER') {
-      if (linked.customerId !== actor.customerId) {
+      if (linked.customer_id !== actor.customerId) {
         return forbidden('That prescription belongs to another account')
       }
     } else if (hasRole(actor, 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
       const pharmacyId = await resolvePharmacyScope(actor)
       if (!pharmacyId) return forbidden('Your account is not linked to a pharmacy')
-      const orders: any[] = await db.orm.Order.where({ prescriptionId: linked.id }).all()
-      const theirs = orders.some((o) => o.pharmacyId === pharmacyId)
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('prescription_id', linked.id)
+      const theirs = (orders || []).some((o) => o.pharmacy_id === pharmacyId)
       if (!theirs) {
         return forbidden('That prescription is not attached to your orders')
       }

@@ -115,7 +115,7 @@ export default function AdminOverviewPage() {
   const stuckCount = overview.stuckOrders || 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {/* Alert banner */}
       {alerts.length > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -149,10 +149,10 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Live Ops Pulse */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_380px] max-w-full overflow-x-hidden">
         <div className="space-y-6">
           {/* Row 1 — 4 KPI Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 max-w-full overflow-x-hidden">
             <Card>
               <CardContent className="p-5 flex items-start gap-4">
                 <div className="rounded-full bg-teal-50 p-3 text-teal-700">
@@ -355,7 +355,7 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* Row 4 — Tables */}
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2 max-w-full overflow-x-hidden">
             {/* Top Medicines */}
             <Card>
               <CardHeader className="pb-2">

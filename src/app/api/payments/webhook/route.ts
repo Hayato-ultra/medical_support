@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual, randomUUID } from 'crypto'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { addTrackingEvent } from '@/lib/api/order-lifecycle'
 
 /**
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    const supabase = createReadOnlyApiClient()
     const payload = JSON.parse(rawBody)
     const notes = payload?.payload?.notes ?? {}
     const orderId: string | undefined =
@@ -47,12 +48,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'orderId is required' }, { status: 400 })
     }
 
-    const order: any = await db.orm.Order.where({ id: orderId }).first()
+    const { data: order } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .single()
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    const payment: any = await db.orm.Payment.where({ orderId }).first()
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('order_id', orderId)
+      .single()
     if (!payment) {
       return NextResponse.json({ error: 'Payment record not found' }, { status: 404 })
     }
@@ -63,38 +72,47 @@ export async function POST(req: Request) {
     }
 
     if (gatewayStatus === 'captured' || gatewayStatus === 'authorized') {
-      await db.orm.Payment.where({ id: payment.id }).update({
-        status: 'COMPLETED',
-        transactionId: transactionId || `txn_${randomUUID().slice(0, 12)}`,
-        paymentMethod: method || payment.paymentMethod || 'upi',
-      })
+      await supabase
+        .from('payments')
+        .update({
+          status: 'COMPLETED',
+          transaction_id: transactionId || `txn_${randomUUID().slice(0, 12)}`,
+          payment_method: method || payment.payment_method || 'upi',
+        })
+        .eq('id', payment.id)
 
       // Payment is what promotes the order out of PENDING_PAYMENT: a
       // prescription order joins the pharmacist queue, everything else is
       // confirmed straight away.
-      const nextStatus = order.prescriptionId ? 'RX_PENDING' : 'CONFIRMED'
-      const message = order.prescriptionId
+      const nextStatus = order.prescription_id ? 'RX_PENDING' : 'CONFIRMED'
+      const message = order.prescription_id
         ? 'Payment received. We are verifying your prescription — you will get an SMS once it is approved (usually ~15 minutes).'
         : 'Payment received. Your order is being prepared.'
 
       const advanced = order.status === 'PENDING_PAYMENT'
       if (advanced) {
-        await db.orm.Order.where({ id: orderId }).update({ status: nextStatus })
+        await supabase
+          .from('orders')
+          .update({ status: nextStatus })
+          .eq('id', orderId)
         await addTrackingEvent(orderId, nextStatus, message)
       }
 
       return NextResponse.json({
         orderStatus: advanced ? nextStatus : order.status,
-        awaitingPrescription: !!order.prescriptionId,
+        awaitingPrescription: !!order.prescription_id,
         message,
       })
     }
 
     if (gatewayStatus === 'failed' || gatewayStatus === 'error') {
-      await db.orm.Payment.where({ id: payment.id }).update({
-        status: 'FAILED',
-        paymentMethod: method || payment.paymentMethod || null,
-      })
+      await supabase
+        .from('payments')
+        .update({
+          status: 'FAILED',
+          payment_method: method || payment.payment_method || null,
+        })
+        .eq('id', payment.id)
 
       return NextResponse.json({
         orderStatus: order.status,

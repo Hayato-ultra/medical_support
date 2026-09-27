@@ -1,0 +1,221 @@
+{
+  "intents": {
+    "inline:create-account-with-test-otp-4fa17e0d": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/cart"
+      },
+      "declaredAt": 1790431696573,
+      "id": "inline:create-account-with-test-otp-4fa17e0d",
+      "state": "bound",
+      "statement": "Create account with test OTP",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431696596
+    },
+    "inline:fill-name-field-60f0b27d": {
+      "declaredAt": 1790431642314,
+      "id": "inline:fill-name-field-60f0b27d",
+      "state": "declared",
+      "statement": "Fill name field",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431642321
+    },
+    "inline:fill-password-field-e7b1f4a8": {
+      "declaredAt": 1790431660734,
+      "id": "inline:fill-password-field-e7b1f4a8",
+      "state": "declared",
+      "statement": "Fill password field",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431660740
+    },
+    "inline:fill-phone-field-da38a511": {
+      "declaredAt": 1790431651233,
+      "id": "inline:fill-phone-field-da38a511",
+      "state": "declared",
+      "statement": "Fill phone field",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431651239
+    },
+    "inline:fill-phone-number-for-otp-login-0cb14c44": {
+      "declaredAt": 1790431758631,
+      "id": "inline:fill-phone-number-for-otp-login-0cb14c44",
+      "state": "declared",
+      "statement": "Fill phone number for OTP login",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431758635
+    },
+    "inline:go-back-to-login-page-63682e71": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/login"
+      },
+      "declaredAt": 1790431468445,
+      "id": "inline:go-back-to-login-page-63682e71",
+      "provenBy": {
+        "at": 1790431471785,
+        "grade": "presence",
+        "verdictId": "reticle_act_and_wait:1790431471785"
+      },
+      "state": "proved",
+      "statement": "Go back to login page",
+      "status": "proved",
+      "subject": "unsorted",
+      "surface": {
+        "route": "/login"
+      },
+      "updatedAt": 1790431471808
+    },
+    "inline:go-to-registration-page-17636a1f": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/register"
+      },
+      "declaredAt": 1790431614092,
+      "id": "inline:go-to-registration-page-17636a1f",
+      "provenBy": {
+        "at": 1790431616429,
+        "grade": "presence",
+        "verdictId": "reticle_act_and_wait:1790431616429"
+      },
+      "state": "proved",
+      "statement": "Go to registration page",
+      "status": "proved",
+      "subject": "unsorted",
+      "surface": {
+        "files": [
+          "src/app/(auth)/login/page.tsx"
+        ],
+        "route": "/register"
+      },
+      "updatedAt": 1790431616455
+    },
+    "inline:navigate-to-login-page-5b669381": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/login"
+      },
+      "declaredAt": 1790431320967,
+      "id": "inline:navigate-to-login-page-5b669381",
+      "state": "bound",
+      "statement": "Navigate to login page",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431321001
+    },
+    "inline:navigate-to-registration-page-74c962ed": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/register"
+      },
+      "declaredAt": 1790431442314,
+      "id": "inline:navigate-to-registration-page-74c962ed",
+      "provenBy": {
+        "at": 1790431445027,
+        "grade": "presence",
+        "verdictId": "reticle_act_and_wait:1790431445027"
+      },
+      "state": "proved",
+      "statement": "Navigate to registration page",
+      "status": "proved",
+      "subject": "unsorted",
+      "surface": {
+        "files": [
+          "src/app/(auth)/login/page.tsx"
+        ],
+        "route": "/register"
+      },
+      "updatedAt": 1790431445052
+    },
+    "inline:select-customer-role-791d0adf": {
+      "declaredAt": 1790431634524,
+      "id": "inline:select-customer-role-791d0adf",
+      "state": "declared",
+      "statement": "Select customer role",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431634530
+    },
+    "inline:send-otp-for-login-e0564322": {
+      "declaredAt": 1790431768558,
+      "id": "inline:send-otp-for-login-e0564322",
+      "state": "declared",
+      "statement": "Send OTP for login",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431768566
+    },
+    "inline:send-otp-to-phone-80a3b8da": {
+      "declaredAt": 1790431678724,
+      "id": "inline:send-otp-to-phone-80a3b8da",
+      "state": "declared",
+      "statement": "Send OTP to phone",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431678730
+    },
+    "inline:submit-login-form-and-navigate-to-cart-a72c8394": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/cart"
+      },
+      "declaredAt": 1790431421783,
+      "id": "inline:submit-login-form-and-navigate-to-cart-a72c8394",
+      "state": "bound",
+      "statement": "Submit login form and navigate to cart",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431421841
+    },
+    "inline:submit-login-with-admin-credentials-88116788": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/cart"
+      },
+      "declaredAt": 1790431598929,
+      "id": "inline:submit-login-with-admin-credentials-88116788",
+      "state": "bound",
+      "statement": "Submit login with admin credentials",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431598955
+    },
+    "inline:switch-back-to-email-password-login-d3dab672": {
+      "declaredAt": 1790431505142,
+      "id": "inline:switch-back-to-email-password-login-d3dab672",
+      "state": "declared",
+      "statement": "Switch back to email/password login",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431505146
+    },
+    "inline:switch-to-phone-otp-login-7dd298c5": {
+      "declaredAt": 1790431494102,
+      "id": "inline:switch-to-phone-otp-login-7dd298c5",
+      "state": "declared",
+      "statement": "Switch to Phone OTP login",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431494113
+    },
+    "inline:verify-otp-and-sign-in-903f5ed6": {
+      "binding": {
+        "kind": "route",
+        "pathname": "/cart"
+      },
+      "declaredAt": 1790431787493,
+      "id": "inline:verify-otp-and-sign-in-903f5ed6",
+      "state": "bound",
+      "statement": "Verify OTP and sign in",
+      "status": "proposed",
+      "subject": "unsorted",
+      "updatedAt": 1790431787524
+    }
+  },
+  "subject": "unsorted",
+  "version": 1
+}

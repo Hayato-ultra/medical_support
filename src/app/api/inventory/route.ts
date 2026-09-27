@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
 import { z } from 'zod'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 
 const InventoryUpdateSchema = z.object({
   medicineId: z.string(),
@@ -13,15 +13,18 @@ const InventoryUpdateSchema = z.object({
 
 export async function GET(req: Request) {
   try {
+    const supabase = createReadOnlyApiClient()
     const { searchParams } = new URL(req.url)
     const pharmacyId = searchParams.get('pharmacyId') || undefined
     const medicineId = searchParams.get('medicineId') || undefined
 
-    const where: any = {}
-    if (pharmacyId) where.pharmacyId = pharmacyId
-    if (medicineId) where.medicineId = medicineId
+    let query = supabase.from('inventory').select('*')
+    if (pharmacyId) query = query.eq('pharmacy_id', pharmacyId)
+    if (medicineId) query = query.eq('medicine_id', medicineId)
 
-    const inventory = await db.orm.Inventory.where(where).all()
+    const { data: inventory, error } = await query
+    if (error) throw error
+
     return NextResponse.json({ inventory })
   } catch (error) {
     console.error('Inventory fetch error:', error)
@@ -34,37 +37,47 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const supabase = createReadOnlyApiClient()
     const body = await req.json()
     const data = InventoryUpdateSchema.parse(body)
 
-    const existing = await db.orm.Inventory
-      .where({ pharmacyId: data.pharmacyId, medicineId: data.medicineId })
-      .first()
+    const { data: existing } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('pharmacy_id', data.pharmacyId)
+      .eq('medicine_id', data.medicineId)
+      .single()
+
+    const updateData = {
+      quantity: data.quantity,
+      price: String(data.price),
+      batch_number: data.batchNumber,
+      expiry_date: data.expiryDate ? new Date(data.expiryDate) : null,
+    }
 
     if (existing) {
-      const updateData = {
-        id: existing.id,
-        quantity: data.quantity,
-        price: String(data.price),
-        batchNumber: data.batchNumber,
-        expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
-      }
-      // @ts-ignore
-      const updated = await db.orm.Inventory.update(updateData)
+      const { data: updated, error } = await supabase
+        .from('inventory')
+        .update(updateData)
+        .eq('id', existing.id)
+        .select()
+        .single()
+      if (error) throw error
       return NextResponse.json({ inventory: updated })
     }
 
-    const createData = {
-      id: crypto.randomUUID(),
-      medicineId: data.medicineId,
-      pharmacyId: data.pharmacyId,
-      quantity: data.quantity,
-      price: String(data.price),
-      batchNumber: data.batchNumber,
-      expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
-    } as any
-    // @ts-ignore
-      const created = await db.orm.Inventory.create(createData)
+    const { data: created, error } = await supabase
+      .from('inventory')
+      .insert({
+        id: crypto.randomUUID(),
+        ...updateData,
+        medicine_id: data.medicineId,
+        pharmacy_id: data.pharmacyId,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
     return NextResponse.json({ inventory: created }, { status: 201 })
   } catch (error) {
     console.error('Inventory update error:', error)

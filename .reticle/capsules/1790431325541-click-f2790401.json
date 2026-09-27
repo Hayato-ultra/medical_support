@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "current route (no route change in the window) '/cart', expected '/login'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e111",
+        "source": {
+          "file": "src/components/ui/card.tsx",
+          "line": 73,
+          "column": 4
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1790431325541-click-f2790401",
+  "createdAt": 1790431325541,
+  "seen": 1,
+  "lastSeenAt": 1790431325541
+}

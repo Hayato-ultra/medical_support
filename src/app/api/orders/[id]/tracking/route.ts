@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, loadAuthorizedOrder } from '@/lib/api/auth'
+
+function maskPhone(phone: string) {
+  if (!phone || phone.length < 4) return '••••••••••'
+  return `••••••${phone.slice(-4)}`
+}
 
 export async function GET(
   _req: Request,
@@ -10,62 +15,73 @@ export async function GET(
   if (!actor) return unauthorized('Sign in to track your order')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { id } = await params
     const { order, error } = await loadAuthorizedOrder(actor, id)
     if (error) return error
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
 
-    const events: any[] = await db.orm.TrackingEvent
-      .where({ orderId: order.id })
-      .all()
-    const itemRows: any[] = await db.orm.OrderItem
-      .where({ orderId: order.id })
-      .all()
-    const payment: any = await db.orm.Payment
-      .where({ orderId: order.id })
-      .first()
-    const pharmacy: any = await db.orm.Pharmacy
-      .where({ id: order.pharmacyId })
-      .first()
-    const rider = order.riderId
-      ? await db.orm.Rider.where({ id: order.riderId }).first()
-      : null
+    const { data: events } = await supabase
+      .from('tracking_events')
+      .select('*')
+      .eq('order_id', order.id)
+    const { data: itemRows } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', order.id)
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('order_id', order.id)
+      .single()
+    const { data: pharmacy } = await supabase
+      .from('pharmacies')
+      .select('name')
+      .eq('id', order.pharmacy_id)
+      .single()
+    const { data: rider } = order.rider_id
+      ? await supabase
+          .from('riders')
+          .select('*')
+          .eq('id', order.rider_id)
+          .single()
+      : { data: null }
 
     const items = await Promise.all(
-      itemRows.map(async (row) => {
-        const medicine: any = await db.orm.Medicine
-          .where({ id: row.medicineId })
-          .first()
+      (itemRows || []).map(async (row) => {
+        const { data: medicine } = await supabase
+          .from('medicines')
+          .select('name, requires_prescription')
+          .eq('id', row.medicine_id)
+          .single()
         return {
-          medicineId: row.medicineId,
+          medicineId: row.medicine_id,
           name: medicine?.name ?? 'Medicine',
           quantity: row.quantity,
           price: String(row.price),
-          requiresPrescription: !!medicine?.requiresPrescription,
+          requiresPrescription: !!medicine?.requires_prescription,
         }
       })
     )
 
     const outForDelivery = order.status === 'OUT_FOR_DELIVERY'
-    // The delivery code is the customer's to read out, so staff and the rider
-    // get told that a code is required but never see the digits.
     const isCustomer = actor.role === 'CUSTOMER'
 
     return NextResponse.json({
       order: {
         id: order.id,
-        orderNumber: order.orderNumber,
+        orderNumber: order.order_number,
         status: order.status,
-        totalAmount: String(order.totalAmount),
-        deliveryFee: String(order.deliveryFee),
-        deliveryAddress: order.deliveryAddress,
+        totalAmount: String(order.total_amount),
+        deliveryFee: String(order.delivery_fee),
+        deliveryAddress: order.delivery_address,
         notes: order.notes || '',
-        createdAt: order.createdAt,
-        prescriptionId: order.prescriptionId || null,
+        createdAt: order.created_at,
+        prescriptionId: order.prescription_id || null,
         pharmacyName: pharmacy?.name ?? null,
         items,
       },
-      timeline: events
+      timeline: (events || [])
         .map((event) => ({
           id: event.id,
           status: event.status,
@@ -80,25 +96,23 @@ export async function GET(
         ? {
             id: rider.id,
             name: rider.name,
-            vehicleType: rider.vehicleType,
-            licensePlate: rider.licensePlate,
+            vehicleType: rider.vehicle_type,
+            licensePlate: rider.license_plate,
             maskedPhone: maskPhone(rider.phone),
-            currentLat: rider.currentLat,
-            currentLng: rider.currentLng,
+            currentLat: rider.current_lat,
+            currentLng: rider.current_lng,
           }
         : null,
-      // The delivery OTP is only ever shown to the customer, and only while
-      // the order is out for delivery, so the rider must read it out.
       delivery: {
-        otpRequired: outForDelivery && !order.otpVerifiedAt,
-        otp: outForDelivery && isCustomer ? order.deliveryOtp : null,
-        verifiedAt: order.otpVerifiedAt || null,
+        otpRequired: outForDelivery && !order.otp_verified_at,
+        otp: outForDelivery && isCustomer ? order.delivery_otp : null,
+        verifiedAt: order.otp_verified_at || null,
       },
       payment: payment
         ? {
             status: payment.status,
             amount: String(payment.amount),
-            method: payment.paymentMethod || null,
+            method: payment.payment_method || null,
           }
         : null,
     })
@@ -109,9 +123,4 @@ export async function GET(
       { status: 500 }
     )
   }
-}
-
-function maskPhone(phone: string) {
-  if (!phone || phone.length < 4) return '••••••••••'
-  return `••••••${phone.slice(-4)}`
 }

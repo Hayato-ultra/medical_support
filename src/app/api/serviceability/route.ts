@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 
 export async function GET(req: Request) {
   try {
+    const supabase = createReadOnlyApiClient()
     const { searchParams } = new URL(req.url)
     const pincode = searchParams.get('pincode') || ''
 
@@ -15,11 +16,14 @@ export async function GET(req: Request) {
       })
     }
 
-    const area: any = await db.orm.ServiceArea
-      .where({ pincode, isActive: 1 })
-      .first()
+    const { data: area, error: areaError } = await supabase
+      .from('service_areas')
+      .select('*')
+      .eq('pincode', pincode)
+      .eq('is_active', true)
+      .single()
 
-    if (!area) {
+    if (areaError || !area) {
       return NextResponse.json({
         serviceable: false,
         reason: 'NOT_SERVICEABLE',
@@ -28,16 +32,17 @@ export async function GET(req: Request) {
       })
     }
 
-    const pharmacies: any[] = await db.orm.Pharmacy
-      .where({ isActive: 1 })
-      .all()
+    const { data: pharmacies } = await supabase
+      .from('pharmacies')
+      .select('*')
+      .eq('is_active', true)
 
     return NextResponse.json({
       serviceable: true,
       reason: 'OK',
       city: area.city || null,
       region: area.region || null,
-      pharmacyCount: pharmacies.length,
+      pharmacyCount: (pharmacies || []).length,
       message: 'Good news — we deliver to this pincode.',
     })
   } catch (err) {
@@ -55,6 +60,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const supabase = createReadOnlyApiClient()
     const { pincode, phone } = await req.json().catch(() => ({}))
 
     if (!/^\d{6}$/.test(pincode || '')) {
@@ -70,9 +76,12 @@ export async function POST(req: Request) {
       )
     }
 
-    const existing: any = await db.orm.WaitlistEntry
-      .where({ pincode, phone })
-      .first()
+    const { data: existing } = await supabase
+      .from('waitlist_entries')
+      .select('*')
+      .eq('pincode', pincode)
+      .eq('phone', phone)
+      .single()
 
     if (existing) {
       return NextResponse.json({
@@ -82,12 +91,14 @@ export async function POST(req: Request) {
       })
     }
 
-    await db.orm.WaitlistEntry.create({
-      id: randomUUID(),
-      pincode,
-      phone,
-      notified: 0,
-    })
+    await supabase
+      .from('waitlist_entries')
+      .insert({
+        id: randomUUID(),
+        pincode,
+        phone,
+        notified: false,
+      })
 
     return NextResponse.json({
       registered: true,

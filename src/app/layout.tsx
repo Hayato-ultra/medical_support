@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/components/customer/cart-provider";
 import { CartWidget } from "@/components/customer/cart-widget";
 import { Navigation } from "@/components/navigation";
+import { ReticleDev } from './reticle-dev';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        {process.env.NODE_ENV === 'development' ? <ReticleDev /> : null}
         <ThemeProvider>
           <TooltipProvider>
             <CartProvider>

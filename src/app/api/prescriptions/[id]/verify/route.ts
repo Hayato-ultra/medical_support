@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, forbidden, hasRole } from '@/lib/api/auth'
 import { applyTransition } from '@/lib/api/order-lifecycle'
 
@@ -16,6 +16,7 @@ export async function PATCH(
   }
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { id } = await params
     const { status, notes } = await req.json().catch(() => ({}))
 
@@ -32,11 +33,13 @@ export async function PATCH(
       )
     }
 
-    const prescription: any = await db.orm.Prescription
-      .where({ id })
-      .first()
+    const { data: prescription, error: rxError } = await supabase
+      .from('prescriptions')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    if (!prescription) {
+    if (rxError || !prescription) {
       return NextResponse.json({ error: 'Prescription not found' }, { status: 404 })
     }
     if (prescription.status !== 'PENDING') {
@@ -48,22 +51,27 @@ export async function PATCH(
       )
     }
 
-    await db.orm.Prescription.where({ id }).update({
-      status,
-      verifiedBy: actor.userId,
-      verifiedAt: new Date(),
-      notes: notes || null,
-    })
+    await supabase
+      .from('prescriptions')
+      .update({
+        status,
+        verified_by: actor.userId,
+        verified_at: new Date().toISOString(),
+        notes: notes || null,
+      })
+      .eq('id', id)
 
     // Move every order waiting on this prescription, and refund on rejection.
     // This goes through the shared lifecycle so the captured-payment gate, the
     // stock release and the refund all behave exactly as they do elsewhere.
-    const orders: any[] = await db.orm.Order
-      .where({ prescriptionId: id, status: 'RX_PENDING' })
-      .all()
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('prescription_id', id)
+      .eq('status', 'RX_PENDING')
 
     const stuck: string[] = []
-    for (const order of orders) {
+    for (const order of orders || []) {
       const result = await applyTransition(
         order,
         status === 'VERIFIED' ? 'CONFIRMED' : 'RX_REJECTED',
@@ -75,12 +83,12 @@ export async function PATCH(
               : `Prescription rejected: ${notes}. Your refund is on the way.`,
         }
       )
-      if (result.error) stuck.push(String(order.orderNumber))
+      if (result.error) stuck.push(String(order.order_number))
     }
 
     return NextResponse.json({
       status,
-      ordersUpdated: orders.length - stuck.length,
+      ordersUpdated: (orders?.length || 0) - stuck.length,
       stuckOrders: stuck,
       message:
         status === 'VERIFIED'

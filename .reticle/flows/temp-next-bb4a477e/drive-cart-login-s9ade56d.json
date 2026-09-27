@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "name": "drive-cart-login-s9ade56d",
+  "projectId": "temp-next-bb4a477e",
+  "createdAt": 1790435536911,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Phone OTP"
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "9876543210"
+      },
+      "args": {
+        "value": "9999999999"
+      },
+      "action": "fill"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Verify & Sign In"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/cart"
+      }
+    }
+  ],
+  "startPath": "/login"
+}

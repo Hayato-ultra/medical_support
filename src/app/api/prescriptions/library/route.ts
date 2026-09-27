@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, forbidden } from '@/lib/api/auth'
 
 export async function GET(_req: Request) {
@@ -10,25 +10,31 @@ export async function GET(_req: Request) {
   }
 
   try {
-    const entries: any[] = await db.orm.PrescriptionLibrary
-      .where({ customerId: actor.customerId })
-      .all()
+    const supabase = createReadOnlyApiClient()
+    const { data: entries, error } = await supabase
+      .from('prescription_library')
+      .select('*')
+      .eq('customer_id', actor.customerId)
+
+    if (error) throw error
 
     const now = Date.now()
     const items = await Promise.all(
-      entries.map(async (entry) => {
-        const prescription: any = await db.orm.Prescription
-          .where({ id: entry.prescriptionId })
-          .first()
+      (entries || []).map(async (entry) => {
+        const { data: prescription } = await supabase
+          .from('prescriptions')
+          .select('status')
+          .eq('id', entry.prescription_id)
+          .single()
         return {
           id: entry.id,
-          prescriptionId: entry.prescriptionId,
-          doctorName: entry.doctorName || 'Not recorded',
-          expiryDate: entry.expiryDate,
-          createdAt: entry.createdAt,
+          prescriptionId: entry.prescription_id,
+          doctorName: entry.doctor_name || 'Not recorded',
+          expiryDate: entry.expiry_date,
+          createdAt: entry.created_at,
           verificationStatus: prescription?.status ?? 'PENDING',
-          imageUrl: entry.imageUrl,
-          expired: entry.expiryDate ? new Date(entry.expiryDate).getTime() < now : false,
+          imageUrl: entry.image_url,
+          expired: entry.expiry_date ? new Date(entry.expiry_date).getTime() < now : false,
         }
       })
     )
@@ -52,36 +58,46 @@ export async function DELETE(req: Request) {
   if (!actor) return unauthorized('Sign in to manage your prescriptions')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
     if (!id) {
       return NextResponse.json({ error: 'id is required' }, { status: 400 })
     }
 
-    const entry: any = await db.orm.PrescriptionLibrary.where({ id }).first()
-    if (!entry) {
+    const { data: entry, error } = await supabase
+      .from('prescription_library')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error || !entry) {
       return NextResponse.json({ error: 'Prescription not found' }, { status: 404 })
     }
-    if (entry.customerId !== actor.customerId) {
+    if (entry.customer_id !== actor.customerId) {
       return forbidden('That prescription belongs to another account')
     }
 
-    const inUse: any[] = await db.orm.Order
-      .where({ prescriptionId: entry.prescriptionId })
-      .all()
-    const activeOrder = inUse.find((o) =>
+    const { data: inUse } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('prescription_id', entry.prescription_id)
+    const activeOrder = (inUse || []).find((o) =>
       !['DELIVERED', 'CANCELLED', 'RX_REJECTED'].includes(String(o.status))
     )
     if (activeOrder) {
       return NextResponse.json(
         {
-          error: `This prescription is attached to order ${activeOrder.orderNumber}. Wait until it is delivered or cancel that order first.`,
+          error: `This prescription is attached to order ${activeOrder.order_number}. Wait until it is delivered or cancel that order first.`,
         },
         { status: 409 }
       )
     }
 
-    await db.orm.PrescriptionLibrary.where({ id }).delete()
+    const { error: deleteError } = await supabase
+      .from('prescription_library')
+      .delete()
+      .eq('id', id)
+    if (deleteError) throw deleteError
 
     return NextResponse.json({ deleted: true })
   } catch (err) {

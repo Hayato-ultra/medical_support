@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, loadAuthorizedOrder } from '@/lib/api/auth'
 
 /** Only an unpaid order can start a payment. RX_PENDING already captured money. */
@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   if (!actor) return unauthorized('Sign in to pay for an order')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { orderId } = await req.json().catch(() => ({}))
     if (!orderId) {
       return NextResponse.json({ error: 'orderId is required' }, { status: 400 })
@@ -27,7 +28,11 @@ export async function POST(req: Request) {
       )
     }
 
-    const payment: any = await db.orm.Payment.where({ orderId }).first()
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('order_id', orderId)
+      .single()
     if (payment && payment.status === 'COMPLETED') {
       return NextResponse.json(
         { error: 'This order is already paid' },
@@ -37,21 +42,27 @@ export async function POST(req: Request) {
 
     const intentId = `pay_${randomUUID().replace(/-/g, '').slice(0, 20)}`
 
-    await db.orm.Order.where({ id: orderId }).update({ paymentIntentId: intentId })
+    await supabase
+      .from('orders')
+      .update({ payment_intent_id: intentId })
+      .eq('id', orderId)
 
     if (payment && payment.status === 'FAILED') {
-      await db.orm.Payment.where({ id: payment.id }).update({ status: 'PENDING' })
+      await supabase
+        .from('payments')
+        .update({ status: 'PENDING' })
+        .eq('id', payment.id)
     }
 
     return NextResponse.json({
       intentId,
-      amount: Number(order.totalAmount),
+      amount: Number(order.total_amount),
       currency: 'INR',
-      orderNumber: order.orderNumber,
+      orderNumber: order.order_number,
       expiresInMinutes: 15,
-      needsPrescription: !!order.prescriptionId,
+      needsPrescription: !!order.prescription_id,
       methods: ['upi', 'card', 'netbanking', 'wallet'],
-      message: order.prescriptionId
+      message: order.prescription_id
         ? 'Pay now. Our pharmacist starts verifying your prescription immediately — the pharmacy only starts packing once it clears.'
         : 'Complete payment within 15 minutes to hold your items.',
     })

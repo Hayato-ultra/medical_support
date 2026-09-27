@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, forbidden, hasRole } from '@/lib/api/auth'
 
 export async function GET() {
@@ -8,17 +8,20 @@ export async function GET() {
   if (!hasRole(actor, 'ADMIN')) return forbidden('Admin only')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const hourAgo = new Date(Date.now() - 3600000)
 
-    const recentEvents: any[] = await db.orm.TrackingEvent.where({
-      timestamp: { gte: hourAgo.toISOString() },
-    }).all()
+    const { data: recentEvents } = await supabase
+      .from('tracking_events')
+      .select('*')
+      .gte('timestamp', hourAgo.toISOString())
 
-    const recentOrders: any[] = await db.orm.Order.where({
-      createdAt: { gte: hourAgo.toISOString() },
-    }).all()
+    const { data: recentOrders } = await supabase
+      .from('orders')
+      .select('*')
+      .gte('created_at', hourAgo.toISOString())
 
-    const events = recentEvents
+    const events = (recentEvents || [])
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 25)
       .map((e) => {
@@ -36,7 +39,7 @@ export async function GET() {
         return {
           id: e.id,
           type,
-          orderId: e.orderId,
+          orderId: e.order_id,
           createdAt: e.timestamp,
           message,
         }
@@ -44,13 +47,13 @@ export async function GET() {
 
     // Add stuck orders
     const activeStatuses = ['RX_PENDING', 'CONFIRMED', 'PACKING', 'PACKED', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY']
-    const stuck = recentOrders
-      .filter((o) => activeStatuses.includes(String(o.status)) && new Date(o.createdAt).getTime() < Date.now() - 30 * 60000)
+    const stuck = (recentOrders || [])
+      .filter((o) => activeStatuses.includes(String(o.status)) && new Date(o.created_at).getTime() < Date.now() - 30 * 60000)
       .map((o) => ({
         id: `stuck-${o.id}`,
         type: 'stuck',
         orderId: o.id,
-        createdAt: o.createdAt,
+        createdAt: o.created_at,
         message: `STUCK in ${o.status} > 30 min`,
       }))
 

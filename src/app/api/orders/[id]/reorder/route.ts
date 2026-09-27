@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, loadAuthorizedOrder } from '@/lib/api/auth'
 
 export async function GET(
@@ -10,24 +10,30 @@ export async function GET(
   if (!actor) return unauthorized('Sign in to reorder')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { id } = await params
     const { order, error } = await loadAuthorizedOrder(actor, id)
     if (error) return error
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
 
-    const rows: any[] = await db.orm.OrderItem.where({ orderId: order.id }).all()
+    const { data: rows } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', order.id)
 
     const items = await Promise.all(
-      rows.map(async (row) => {
-        const medicine: any = await db.orm.Medicine
-          .where({ id: row.medicineId })
-          .first()
+      (rows || []).map(async (row) => {
+        const { data: medicine } = await supabase
+          .from('medicines')
+          .select('name, requires_prescription')
+          .eq('id', row.medicine_id)
+          .single()
         return {
-          medicineId: row.medicineId,
+          medicineId: row.medicine_id,
           name: medicine?.name ?? 'Medicine',
           price: Number(row.price),
           quantity: row.quantity,
-          requiresPrescription: !!medicine?.requiresPrescription,
+          requiresPrescription: !!medicine?.requires_prescription,
           available: !!medicine,
         }
       })
@@ -37,11 +43,11 @@ export async function GET(
 
     return NextResponse.json({
       orderId: order.id,
-      orderNumber: order.orderNumber,
+      orderNumber: order.order_number,
       status: order.status,
       items,
       unavailable,
-      prescriptionId: order.prescriptionId || null,
+      prescriptionId: order.prescription_id || null,
     })
   } catch (err) {
     console.error('Reorder fetch error:', err)

@@ -1,4 +1,4 @@
-import { Providers } from '@/components/providers/auth-provider'
+import { Providers } from '@/app/providers'
 
 export default function AuthLayout({
   children,

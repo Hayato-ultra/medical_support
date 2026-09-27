@@ -7,14 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { ShoppingCart, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 export function CartWidget() {
   const { itemCount, total } = useCart()
   const { isAuthenticated } = useAuth()
   const [showCart, setShowCart] = useState(false)
+  const pathname = usePathname()
+  const isAdminRoute = pathname?.startsWith('/admin')
 
-  if (itemCount === 0) return null
+  if (itemCount === 0 || pathname === '/cart' || isAdminRoute) return null
 
   return (
     <div className="relative">

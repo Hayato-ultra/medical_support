@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, forbidden, hasRole } from '@/lib/api/auth'
 
 export async function GET() {
@@ -8,24 +8,39 @@ export async function GET() {
   if (!hasRole(actor, 'ADMIN')) return forbidden('Admin only')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const weekAgo = new Date(Date.now() - 604800000)
     const twoWeeksAgo = new Date(Date.now() - 1209600000)
 
-    const ordersWeek: any[] = await db.orm.Order.where({ createdAt: { gte: weekAgo.toISOString() } }).all()
-    const ordersTwoWeeks: any[] = await db.orm.Order.where({ createdAt: { gte: twoWeeksAgo.toISOString() } }).all()
+    const { data: ordersWeek } = await supabase
+      .from('orders')
+      .select('*')
+      .gte('created_at', weekAgo.toISOString())
+    const { data: ordersTwoWeeks } = await supabase
+      .from('orders')
+      .select('*')
+      .gte('created_at', twoWeeksAgo.toISOString())
 
-    const eventsWeek: any[] = await db.orm.TrackingEvent.where({ createdAt: { gte: weekAgo.toISOString() } }).all()
-    const eventsTwoWeeks: any[] = await db.orm.TrackingEvent.where({ createdAt: { gte: twoWeeksAgo.toISOString() } }).all()
+    const { data: eventsWeek } = await supabase
+      .from('tracking_events')
+      .select('*')
+      .gte('created_at', weekAgo.toISOString())
+    const { data: eventsTwoWeeks } = await supabase
+      .from('tracking_events')
+      .select('*')
+      .gte('created_at', twoWeeksAgo.toISOString())
 
-    const pharmacies: any[] = await db.orm.Pharmacy.where({}).all()
+    const { data: pharmacies } = await supabase
+      .from('pharmacies')
+      .select('*')
 
-    const health = pharmacies.map((p) => {
-      const pOrders = ordersWeek.filter((o) => o.pharmacyId === p.id)
-      const pEvents = eventsWeek.filter((e) => pOrders.some((o) => o.id === e.orderId))
+    const health = (pharmacies || []).map((p) => {
+      const pOrders = (ordersWeek || []).filter((o) => o.pharmacy_id === p.id)
+      const pEvents = (eventsWeek || []).filter((e) => pOrders.some((o) => o.id === e.order_id))
 
-      const acceptedEvents = pEvents.filter((e) => e.toStatus === 'ACCEPTED')
-      const confirmedEvents = pEvents.filter((e) => e.fromStatus === 'CONFIRMED')
-      const rejectedEvents = pEvents.filter((e) => e.fromStatus === 'CONFIRMED' && e.toStatus === 'CANCELLED' && e.actor === 'PHARMACY')
+      const acceptedEvents = pEvents.filter((e) => e.to_status === 'ACCEPTED')
+      const confirmedEvents = pEvents.filter((e) => e.from_status === 'CONFIRMED')
+      const rejectedEvents = pEvents.filter((e) => e.from_status === 'CONFIRMED' && e.to_status === 'CANCELLED' && e.actor === 'PHARMACY')
 
       const acceptRate = confirmedEvents.length
         ? (acceptedEvents.length / confirmedEvents.length) * 100
@@ -34,8 +49,8 @@ export async function GET() {
       let avgAcceptMin = 0
       if (acceptedEvents.length > 0) {
         const totalMs = acceptedEvents.reduce((sum, e) => {
-          const confirmed = eventsTwoWeeks.find((c) => c.orderId === e.orderId && c.toStatus === 'CONFIRMED')
-          if (confirmed) return sum + (new Date(e.createdAt).getTime() - new Date(confirmed.createdAt).getTime())
+          const confirmed = (eventsTwoWeeks || []).find((c) => c.order_id === e.order_id && c.to_status === 'CONFIRMED')
+          if (confirmed) return sum + (new Date(e.created_at).getTime() - new Date(confirmed.created_at).getTime())
           return sum
         }, 0)
         avgAcceptMin = Math.round(totalMs / acceptedEvents.length / 60000)

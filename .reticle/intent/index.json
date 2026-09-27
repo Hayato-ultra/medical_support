@@ -1,0 +1,107 @@
+{
+  "entries": [
+    {
+      "id": "inline:create-account-with-test-otp-4fa17e0d",
+      "statement": "Create account with test OTP",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:fill-name-field-60f0b27d",
+      "statement": "Fill name field",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:fill-password-field-e7b1f4a8",
+      "statement": "Fill password field",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:fill-phone-field-da38a511",
+      "statement": "Fill phone field",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:fill-phone-number-for-otp-login-0cb14c44",
+      "statement": "Fill phone number for OTP login",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:go-back-to-login-page-63682e71",
+      "statement": "Go back to login page",
+      "status": "proved",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:go-to-registration-page-17636a1f",
+      "statement": "Go to registration page",
+      "status": "proved",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:navigate-to-login-page-5b669381",
+      "statement": "Navigate to login page",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:navigate-to-registration-page-74c962ed",
+      "statement": "Navigate to registration page",
+      "status": "proved",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:select-customer-role-791d0adf",
+      "statement": "Select customer role",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:send-otp-for-login-e0564322",
+      "statement": "Send OTP for login",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:send-otp-to-phone-80a3b8da",
+      "statement": "Send OTP to phone",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:submit-login-form-and-navigate-to-cart-a72c8394",
+      "statement": "Submit login form and navigate to cart",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:submit-login-with-admin-credentials-88116788",
+      "statement": "Submit login with admin credentials",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:switch-back-to-email-password-login-d3dab672",
+      "statement": "Switch back to email/password login",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:switch-to-phone-otp-login-7dd298c5",
+      "statement": "Switch to Phone OTP login",
+      "status": "proposed",
+      "subject": "unsorted"
+    },
+    {
+      "id": "inline:verify-otp-and-sign-in-903f5ed6",
+      "statement": "Verify OTP and sign in",
+      "status": "proposed",
+      "subject": "unsorted"
+    }
+  ],
+  "version": 1
+}

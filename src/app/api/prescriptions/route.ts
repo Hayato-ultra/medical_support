@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
-import { db } from '@/lib/db/client'
+import { createReadOnlyApiClient } from '@/lib/supabase/api-client'
 import { getActor, unauthorized, forbidden, hasRole, resolvePharmacyScope } from '@/lib/api/auth'
 
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000
@@ -12,6 +12,7 @@ export async function POST(req: Request) {
   if (!actor) return unauthorized('Sign in to upload a prescription')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const form = await req.formData().catch(() => null)
     if (!form) {
       return NextResponse.json(
@@ -55,38 +56,44 @@ export async function POST(req: Request) {
     }
     const olderThanSixMonths = Date.now() - issuedAt.getTime() > SIX_MONTHS_MS
 
-    const prescription: any = await db.orm.Prescription.create({
-      id: randomUUID(),
-      customerId: actor.customerId,
-      imageUrl,
-      verifiedBy: null,
-      verifiedAt: null,
-      status: 'PENDING',
-      notes: notes || null,
-    })
+    const { data: prescription, error: rxError } = await supabase
+      .from('prescriptions')
+      .insert({
+        id: randomUUID(),
+        customer_id: actor.customerId,
+        image_url: imageUrl,
+        verified_by: null,
+        verified_at: null,
+        status: 'PENDING',
+        notes: notes || null,
+      })
+      .select()
+      .single()
 
-    await db.orm.PrescriptionLibrary.create({
-      id: randomUUID(),
-      customerId: actor.customerId,
-      prescriptionId: prescription.id,
-      imageUrl,
-      doctorName: doctorName || null,
-      expiryDate: new Date(issuedAt.getTime() + SIX_MONTHS_MS),
-      status: olderThanSixMonths ? 'EXPIRED' : 'ACTIVE',
-    })
+    if (rxError) throw rxError
+
+    await supabase
+      .from('prescription_library')
+      .insert({
+        id: randomUUID(),
+        customer_id: actor.customerId,
+        prescription_id: prescription.id,
+        image_url: imageUrl,
+        doctor_name: doctorName || null,
+        expiry_date: new Date(issuedAt.getTime() + SIX_MONTHS_MS).toISOString(),
+        status: olderThanSixMonths ? 'EXPIRED' : 'ACTIVE',
+      })
 
     return NextResponse.json(
       {
         prescription: {
           id: prescription.id,
           status: prescription.status,
-          createdAt: prescription.createdAt,
+          createdAt: prescription.created_at,
         },
         expired: olderThanSixMonths,
         warnings: olderThanSixMonths
-          ? [
-              'This prescription is older than 6 months. A pharmacist may ask for a fresher copy.',
-            ]
+          ? ['This prescription is older than 6 months. A pharmacist may ask for a fresher copy.']
           : [],
         message: olderThanSixMonths
           ? 'Uploaded, but it looks older than 6 months. Upload a fresher copy if you can.'
@@ -108,35 +115,44 @@ export async function GET(req: Request) {
   if (!actor) return unauthorized('Sign in to view your prescriptions')
 
   try {
+    const supabase = createReadOnlyApiClient()
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status') || undefined
 
-    const where: any = {}
+    let prescriptions: any[] = []
+
     if (actor.role === 'CUSTOMER') {
-      where.customerId = actor.customerId
+      let query = supabase.from('prescriptions').select('*').eq('customer_id', actor.customerId)
+      if (status) query = query.eq('status', status)
+      const { data } = await query
+      prescriptions = data || []
     } else if (hasRole(actor, 'ADMIN', 'PHARMACY_OWNER', 'PHARMACY_STAFF')) {
       if (actor.role === 'ADMIN') {
-        // The platform verifier works the global queue, oldest first.
-        if (status) where.status = status
-        else where.status = 'PENDING'
+        let query = supabase.from('prescriptions').select('*')
+        if (status) query = query.eq('status', status)
+        else query = query.eq('status', 'PENDING')
+        const { data } = await query
+        prescriptions = data || []
       } else {
-        // A partner pharmacy is the dispensing party: it may only see the
-        // prescriptions attached to its own orders, never the whole queue.
-        // Anything wider leaks other customers' health data to a competitor.
         const pharmacyId = await resolvePharmacyScope(actor)
         if (!pharmacyId) {
           return NextResponse.json({ prescriptions: [], count: 0 })
         }
-        const orders: any[] = await db.orm.Order.where({ pharmacyId }).all()
-        const ids = [
-          ...new Set(orders.map((o) => o.prescriptionId).filter(Boolean)),
-        ] as string[]
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('prescription_id')
+          .eq('pharmacy_id', pharmacyId)
+        const ids = [...new Set((orders || []).map((o) => o.prescription_id).filter(Boolean))]
         if (ids.length === 0) {
           return NextResponse.json({ prescriptions: [], count: 0 })
         }
         const scoped: any[] = []
         for (const id of ids) {
-          const found: any = await db.orm.Prescription.where({ id }).first()
+          const { data: found } = await supabase
+            .from('prescriptions')
+            .select('*')
+            .eq('id', id)
+            .single()
           if (found) scoped.push(found)
         }
         return NextResponse.json({
@@ -147,10 +163,6 @@ export async function GET(req: Request) {
     } else {
       return forbidden('You cannot view prescriptions')
     }
-
-    if (actor.role === 'CUSTOMER' && status) where.status = status
-
-    const prescriptions: any[] = await db.orm.Prescription.where(where).all()
 
     return NextResponse.json({
       prescriptions: await enrichPrescriptions(prescriptions, actor, status),
@@ -165,19 +177,12 @@ export async function GET(req: Request) {
   }
 }
 
-/**
- * Adds the doctor and expiry detail, and decides who may see the image itself.
- *
- * The image is the prescription, so it goes to the customer who uploaded it and
- * to the pharmacy that has to dispense against it. Staff on the platform's
- * verification queue are deliberately kept out unless they are the admin
- * verifier; /api/uploads/[file] enforces the same rule on the bytes.
- */
 async function enrichPrescriptions(
   prescriptions: any[],
   actor: Awaited<ReturnType<typeof getActor>> & {},
   status?: string | null
 ) {
+  const supabase = createReadOnlyApiClient()
   const canSeeImage =
     actor.role === 'CUSTOMER' ||
     actor.role === 'ADMIN' ||
@@ -185,21 +190,23 @@ async function enrichPrescriptions(
 
   const enriched = await Promise.all(
     prescriptions.map(async (p) => {
-      const entry: any = await db.orm.PrescriptionLibrary
-        .where({ prescriptionId: p.id })
-        .first()
+      const { data: entry } = await supabase
+        .from('prescription_library')
+        .select('*')
+        .eq('prescription_id', p.id)
+        .single()
       return {
         id: p.id,
-        customerId: p.customerId,
+        customerId: p.customer_id,
         status: status && actor.role === 'CUSTOMER' ? status : p.status,
         notes: p.notes || '',
-        verifiedBy: p.verifiedBy || null,
-        verifiedAt: p.verifiedAt,
-        createdAt: p.createdAt,
-        imageUrl: canSeeImage ? p.imageUrl : undefined,
-        doctorName: entry?.doctorName || 'Not recorded',
-        expiryDate: entry?.expiryDate || null,
-        expired: entry?.expiryDate ? new Date(entry.expiryDate) < new Date() : false,
+        verifiedBy: p.verified_by || null,
+        verifiedAt: p.verified_at,
+        createdAt: p.created_at,
+        imageUrl: canSeeImage ? p.image_url : undefined,
+        doctorName: entry?.doctor_name || 'Not recorded',
+        expiryDate: entry?.expiry_date || null,
+        expired: entry?.expiry_date ? new Date(entry.expiry_date) < new Date() : false,
       }
     })
   )
@@ -210,10 +217,6 @@ async function enrichPrescriptions(
   return enriched
 }
 
-/**
- * Stores the upload in Vercel Blob when credentials are present, otherwise
- * writes to local private storage so development still works end to end.
- */
 async function storePrescriptionFile(buffer: Buffer, upload: File) {
   const token = process.env.BLOB_READ_WRITE_TOKEN
   const filename = `${randomUUID()}-${upload.name.replace(/[^\w.-]/g, '_')}`
@@ -229,10 +232,6 @@ async function storePrescriptionFile(buffer: Buffer, upload: File) {
       })
       return blob.url
     } catch (err) {
-      // A stale or placeholder token must not take prescription upload down
-      // with it: an unusable token is a configuration problem, whereas a 500
-      // here loses the customer's prescription and blocks their order. Fall
-      // back to local storage and make the misconfiguration loud.
       console.error(
         '[prescriptions] Vercel Blob put failed, falling back to local storage. Check BLOB_READ_WRITE_TOKEN.',
         err

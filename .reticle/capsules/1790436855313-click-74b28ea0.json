@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "current route (no route change in the window) '/login', expected '/admin'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e1043",
+        "source": {
+          "file": "src/components/ui/auth-form.tsx",
+          "line": 62,
+          "column": 8
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1790436855313-click-74b28ea0",
+  "createdAt": 1790436855314,
+  "seen": 1,
+  "lastSeenAt": 1790436855314
+}
