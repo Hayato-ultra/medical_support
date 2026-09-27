@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
 
 interface CreateUserBody {
   email: string
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create auth user
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: authError } = await getSupabaseAdmin().auth.admin.createUser({
       email,
       password,
       email_confirm: true, // Skip email confirmation for test users
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
     const userId = authData.user.id
 
     // Create user profile
-    const { error: profileError } = await supabaseAdmin.from('users').upsert({
+    const { error: profileError } = await getSupabaseAdmin().from('users').upsert({
       id: userId,
       email,
       role: role.toUpperCase(),
@@ -68,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     // Create role-specific records
     if (role === 'CUSTOMER') {
-      const { error } = await supabaseAdmin.from('customers').insert({
+      const { error } = await getSupabaseAdmin().from('customers').insert({
         user_id: userId,
         name,
         phone: phone || ''
@@ -78,7 +80,7 @@ export async function POST(req: NextRequest) {
       if (!pharmacyName || !licenseNumber || !pharmacyAddress || !pharmacyPincode) {
         return NextResponse.json({ error: 'Pharmacy details required for pharmacy owner' }, { status: 400 })
       }
-      const { data: pharmacy, error: pharmacyError } = await supabaseAdmin.from('pharmacies').insert({
+      const { data: pharmacy, error: pharmacyError } = await getSupabaseAdmin().from('pharmacies').insert({
         name: pharmacyName,
         license_number: licenseNumber,
         address: pharmacyAddress,
@@ -89,7 +91,7 @@ export async function POST(req: NextRequest) {
       }).select().single()
       if (pharmacyError) throw pharmacyError
 
-      await supabaseAdmin.from('pharmacy_staff').insert({
+      await getSupabaseAdmin().from('pharmacy_staff').insert({
         user_id: userId,
         pharmacy_id: pharmacy.id,
         role: 'OWNER'
@@ -100,7 +102,7 @@ export async function POST(req: NextRequest) {
       if (!vehicleType || !licensePlate) {
         return NextResponse.json({ error: 'Vehicle details required for rider' }, { status: 400 })
       }
-      const { error } = await supabaseAdmin.from('riders').insert({
+      const { error } = await getSupabaseAdmin().from('riders').insert({
         user_id: userId,
         name,
         phone: phone || '',
