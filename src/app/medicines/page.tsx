@@ -85,7 +85,7 @@ export default function MedicinesPage() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <Pill className="h-5 w-5 text-primary" />
-              <span className="font-bold">Medical Support</span>
+              <span className="font-bold">Mediconnect</span>
             </Link>
 
             <div className="relative ml-auto hidden max-w-md flex-1 sm:block">

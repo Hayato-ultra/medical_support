@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import { LegalPage, Section } from '@/components/legal-page'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — Medical Support',
+  title: 'Terms of Service — Mediconnect',
   description:
-    'The terms that govern use of Medical Support, including prescriptions, orders, delivery, and account responsibilities.',
+    'The terms that govern use of Mediconnect, including prescriptions, orders, delivery, and account responsibilities.',
 }
 
 export default function TermsPage() {
@@ -12,11 +12,11 @@ export default function TermsPage() {
     <LegalPage
       title="Terms of Service"
       updated="26 September 2026"
-      intro="By using Medical Support you agree to these terms. They describe what we do, what we need from you, and the limits of what we can promise."
+      intro="By using Mediconnect you agree to these terms. They describe what we do, what we need from you, and the limits of what we can promise."
     >
       <Section heading="What we provide">
         <p>
-          Medical Support is an online pharmacy platform. We connect you with
+          Mediconnect is an online pharmacy platform. We connect you with
           licensed pharmacies that dispense medicines and with riders who
           deliver them. We are not a medical provider: we do not diagnose, we do
           not prescribe, and we do not give medical advice.

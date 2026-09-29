@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 
 const navItemsByRole: Record<string, Array<{ label: string; href: string; icon: any }>> = {
   CUSTOMER: [
@@ -91,9 +92,15 @@ export function Navigation() {
   return (
     <header className={cn('sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur transition-shadow', scrolled && 'shadow-md')}>
       <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
-        <Link href="/home" className="flex items-center gap-2" aria-label="Go to homepage">
-          <Package className="h-7 w-7 text-green-600" />
-          <span className="text-xl font-bold tracking-tight hidden sm:block">Medical Support</span>
+        <Link href="/" className="flex items-center gap-2" aria-label="Go to homepage">
+          <Image
+            src="/logo.png"
+            alt="Mediconnect"
+            width={28}
+            height={28}
+            className="rounded"
+          />
+          <span className="text-xl font-bold tracking-tight hidden sm:block">Mediconnect</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">

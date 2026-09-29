@@ -115,7 +115,7 @@ export function LoginPageContent() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Medical Support</CardTitle>
+          <CardTitle className="text-2xl font-bold">Mediconnect</CardTitle>
           <CardDescription>
             {mode === 'password' ? 'Sign in with email and password' : 'Enter your email to receive OTP'}
           </CardDescription>

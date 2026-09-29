@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { LegalPage, Section } from '@/components/legal-page'
 
 export const metadata: Metadata = {
-  title: 'Cancellation & Refund Policy — Medical Support',
+  title: 'Cancellation & Refund Policy — Mediconnect',
   description:
     'When you can cancel an order, when a pharmacist can reject a prescription, and how long a refund takes.',
 }

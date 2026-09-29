@@ -24,8 +24,8 @@ export function LegalPage({
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link href="/home" className="text-xl font-bold tracking-tight">
-            Medical Support
+          <Link href="/" className="text-xl font-bold tracking-tight">
+            Mediconnect
           </Link>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/home">

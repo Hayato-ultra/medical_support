@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = {
-  title: 'Contact — Medical Support',
+  title: 'Contact — Mediconnect',
   description:
-    'Reach Medical Support support for an order, a prescription, or a pharmacy partnership, plus emergency numbers.',
+    'Reach Mediconnect support for an order, a prescription, or a pharmacy partnership, plus emergency numbers.',
 }
 
 const CHANNELS = [

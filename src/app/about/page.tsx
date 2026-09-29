@@ -4,17 +4,17 @@ import { LegalPage, Section } from '@/components/legal-page'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
-  title: 'About — Medical Support',
+  title: 'About — Mediconnect',
   description:
-    'What Medical Support is, who it is for, and how the pharmacy and rider network works.',
+    'What Mediconnect is, who it is for, and how the pharmacy and rider network works.',
 }
 
 export default function AboutPage() {
   return (
     <LegalPage
-      title="About Medical Support"
+      title="About Mediconnect"
       updated="26 September 2026"
-      intro="Medical Support puts a licensed pharmacy, a pharmacist and a rider between you and a medicine you need, and keeps you informed the whole way through."
+      intro="Mediconnect puts a licensed pharmacy, a pharmacist and a rider between you and a medicine you need, and keeps you informed the whole way through."
     >
       <Section heading="What we are">
         <p>

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Pill, ShieldCheck, Store, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 const COLUMNS = [
   {
@@ -44,9 +45,15 @@ export function SiteFooter() {
       <div className="container mx-auto max-w-7xl px-4 py-10">
         <div className="grid gap-8 md:grid-cols-5">
           <div className="md:col-span-2">
-            <Link href="/home" className="flex items-center gap-2">
-              <Pill className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold tracking-tight">Medical Support</span>
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/logo.png"
+                alt="Mediconnect"
+                width={24}
+                height={24}
+                className="rounded"
+              />
+              <span className="text-lg font-bold tracking-tight">Mediconnect</span>
             </Link>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               Online medicine delivery with pharmacist-verified prescriptions and
@@ -85,7 +92,7 @@ export function SiteFooter() {
 
         <div className="mt-10 flex flex-col gap-3 border-t pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            &copy; {new Date().getFullYear()} Medical Support. Medicines are
+            &copy; {new Date().getFullYear()} Mediconnect. Medicines are
             dispensed against a valid prescription where applicable.
           </p>
           <p>

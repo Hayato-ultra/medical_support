@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Medical Support - Medicine Delivery",
+  title: "Mediconnect - Medicine Delivery",
   description: "Order medicines from nearby pharmacies",
 };
 

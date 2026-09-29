@@ -153,7 +153,7 @@ export default function PharmacyPage() {
         <div className="container flex h-16 items-center justify-between max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-2">
             <Store className="h-6 w-6 text-green-600" />
-            <span className="text-xl font-bold tracking-tight">Medical Support</span>
+            <span className="text-xl font-bold tracking-tight">Mediconnect</span>
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="bg-green-50 text-green-700">Pharmacy</Badge>

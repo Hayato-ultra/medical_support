@@ -8,25 +8,19 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
-import { homeForRole } from '@/lib/role-home'
 import { SiteFooter } from '@/components/site-footer'
 import {
-  Pill, Search, Camera, RefreshCw, ArrowRight, Clock, MapPin,
-  ShieldCheck, ShoppingCart, Upload, Bell,
+  Search, Camera, RefreshCw, ArrowRight, Clock, MapPin,
+  ShieldCheck, ShoppingCart, Bell,
 } from 'lucide-react'
 
 export default function Home() {
-  const { user, isLoading, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const boxRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (isLoading || !isAuthenticated || !user?.role) return
-    router.replace(homeForRole(user.role))
-  }, [isLoading, isAuthenticated, user, router])
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -58,44 +52,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-        <div className="container mx-auto max-w-7xl flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Pill className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold tracking-tight">Medical Support</span>
-          </Link>
-
-          <nav className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/medicines">Browse medicines</Link>
-            </Button>
-
-            {isAuthenticated ? (
-              <>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/orders">
-                    <ShoppingCart className="mr-2 h-4 w-4" /> My orders
-                  </Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link href="/dashboard?role=customer">
-                    Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/login">Sign in</Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link href="/register">Get started</Link>
-                </Button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
 
       <main>
         <section className="border-b bg-gradient-to-b from-primary/5 to-background">

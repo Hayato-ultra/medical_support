@@ -73,7 +73,7 @@ type Settings = {
 
 const defaultSettings: Settings = {
   general: {
-    siteName: 'Medical Support',
+    siteName: 'Mediconnect',
     siteDescription: 'Your trusted medicine delivery partner',
     contactEmail: 'support@medicalsupport.com',
     contactPhone: '+91 9876543210',

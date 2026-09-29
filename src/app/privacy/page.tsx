@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import { LegalPage, Section } from '@/components/legal-page'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Medical Support',
+  title: 'Privacy Policy — Mediconnect',
   description:
-    'What personal and health data Medical Support collects, why we need it, and the rights you have over it.',
+    'What personal and health data Mediconnect collects, why we need it, and the rights you have over it.',
 }
 
 export default function PrivacyPolicyPage() {
@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
     <LegalPage
       title="Privacy Policy"
       updated="26 September 2026"
-      intro="Medical Support delivers prescription medicines, which means we handle health data. This policy explains exactly what we collect, why, and what you can ask us to do with it."
+      intro="Mediconnect delivers prescription medicines, which means we handle health data. This policy explains exactly what we collect, why, and what you can ask us to do with it."
     >
       <Section heading="What we collect">
         <ul className="list-disc space-y-2 pl-5">
