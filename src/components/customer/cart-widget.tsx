@@ -17,7 +17,7 @@ export function CartWidget() {
   const pathname = usePathname()
   const isAdminRoute = pathname?.startsWith('/admin')
 
-  if (itemCount === 0 || pathname === '/cart' || isAdminRoute) return null
+  if (itemCount === 0 || pathname === '/' || pathname === '/cart' || isAdminRoute) return null
 
   return (
     <div className="relative">
